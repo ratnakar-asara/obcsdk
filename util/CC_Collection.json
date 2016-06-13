@@ -1,0 +1,13 @@
+[{"name":"example02",
+  "type": "GOLANG",
+  "path" :"github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example02"
+  },
+  {"name":"example05",
+   "type": "GOLANG",
+   "path" :"github.com/hyperledger/fabric/examples/chaincode/go/chaincode_example05"
+  },
+  {"name":"mycc",
+   "type": "GOLANG",
+   "path" :"https://github.com/ratnakar-asara/fabric/examples/chaincode/go/chaincode_example02"
+  }
+]

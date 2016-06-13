@@ -1,0 +1,43 @@
+{
+   "PeerData":  [
+   { "api-host" : "9.37.136.143", "api-port" : "33109" } , 
+   { "api-host" : "9.37.136.144", "api-port" : "33067" } , 
+   { "api-host" : "9.37.136.143", "api-port" : "33111" } , 
+   { "api-host" : "9.37.136.141", "api-port" : "32937" }
+   ],
+   "UserData": [
+   { "username": "lukas", "secret": "NPKYL39uKbkj" },
+   { "username": "system_chaincode_invoker", "secret": "DRJ20pEql15a" },
+   { "username": "diego", "secret": "DRJ23pEQl16a" },
+   { "username": "jim", "secret": "6avZQLwcUe9b" },
+   { "username": "binhn", "secret": "7avZQLwcUe9q" },
+   { "username": "vp", "secret": "f3489fy98ghf" },
+   { "username": "test_vp0", "secret": "MwYpmSRjupbT" },
+   { "username": "test_vp1", "secret": "5wgHK9qqYaPy" },
+   { "username": "test_vp2", "secret": "vQelbRvja7cJ" },
+   { "username": "test_vp3", "secret": "9LKqKH5peurL" },
+   { "username": "test_vp4", "secret": "Pqh90CEW5juZ" },
+   { "username": "test_vp5", "secret": "FfdvDkAdY81P" },
+   { "username": "test_vp6", "secret": "QiXJgHyV4t7A" },
+   { "username": "test_vp7", "secret": "twoKZouEyLyB" },
+   { "username": "test_vp8", "secret": "BxP7QNh778gI" },
+   { "username": "test_vp9", "secret": "wu3F1EwJWHvQ" },
+   { "username": "test_user0", "secret": "MS9qrN8hFjlE" },
+   { "username": "test_user1", "secret": "jGlNl6ImkuDo" },
+   { "username": "test_user2", "secret": "zMflqOKezFiA" },
+   { "username": "test_user3", "secret": "vWdLCE00vJy0" },
+   { "username": "test_user4", "secret": "4nXSrfoYGFCP" },
+   { "username": "test_user5", "secret": "yg5DVhm0er1z" },
+   { "username": "test_user6", "secret": "b7pmSxzKNFiw" },
+   { "username": "test_user7", "secret": "YsWZD4qQmYxo" },
+   { "username": "test_user8", "secret": "W8G0usrU7jRk" },
+   { "username": "test_user9", "secret": "H80SiB5ODKKQ" }
+   ],
+   "PeerGrpc" :  [
+   { "api-host" : "9.37.136.143", "api-port" : "33108" } , 
+   { "api-host" : "9.37.136.144", "api-port" : "33066" } , 
+   { "api-host" : "9.37.136.143", "api-port" : "33110" } , 
+   { "api-host" : "9.37.136.141", "api-port" : "32936" }
+   ],
+  "Name":"obcvm-vp"
+}
