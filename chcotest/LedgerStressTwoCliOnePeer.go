@@ -2,143 +2,129 @@ package main
 
 import (
 	"fmt"
-	"obcsdk/chaincode"
-	"obcsdk/peernetwork"
+	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"obcsdk/chaincode"
+	"obcsdk/peernetwork"
 )
 
 var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64
 var argA = []string{"a"}
-var argB = []string{"b"}
-
-var data string
+var argB = []string{"counter"}
 var counter int64
-
-var url string
-//TODO: Be cautious race conditions occurs in code due waits
 var wg sync.WaitGroup
+
 const(
-	THREAD_COUNT = 100
-	TOTAL_NODES = 2
 	TRX_COUNT = 20000
+	CLIENTS = 2
 )
-func setupNetwork() {
-	fmt.Println("Creating a local docker network")
-	peernetwork.SetupLocalNetwork(TOTAL_NODES, true)
-	//peernetwork.PrintNetworkDetails()
+
+func initNetwork() {
+	fmt.Println("========= Init Network =========")
+	//peernetwork.GetNC_Local()
 	peerNetworkSetup = chaincode.InitNetwork()
 	chaincode.InitChainCodes()
-	chaincode.RegisterUsers()
+	fmt.Println("========= Register Users =========")
+	chaincode.RegisterCustomUsers()
 }
 
-//TODO : rather can we have a map for sleep for millis, secs and mins
-func sleep(secs int64) {
-	time.Sleep(time.Second * time.Duration(secs))
-}
-
-func deployChaincode(done chan bool) {
-	example := "mycc"
-	var funcArgs = []string{example, "init"}
-	var args = []string{argA[0], data, argB[0], "0"}
-
-	fmt.Println("\n######## Deploying chaincode ")
-	chaincode.Deploy(funcArgs, args)
-
-	sleep(30) //90 ?
-	done <- true
-}
-
-func invokeChaincode() {
+func invokeChaincode(user string ) {
 	counter++
-	fmt.Println("Iteration#", counter)
-	arg1Construct := []string{"mycc", "invoke"}
-	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), data, "b"}
+	arg1Construct := []string{CHAINCODE_NAME, "invoke", user}
+	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), DATA, "counter"}
 
-	_,_ = chaincode.Invoke(arg1Construct, arg2Construct) //invRes
-	//fmt.Println("\n Invoke response: ", invRes)
+	_,_ = chaincode.InvokeAsUser(arg1Construct, arg2Construct)
 }
 
-func queryChaincode() (res1, res2 string) { //int64) {
-	var qargA = []string{"a" + strconv.FormatInt(counter, 10)}
-	qAPIArgs0 := []string{"mycc", "query"}
-	A, _ := chaincode.Query(qAPIArgs0, qargA)
-	B, _ := chaincode.Query(qAPIArgs0, []string{"b"})
-	return A, B
-}
-
-func main() {
-	args := os.Args
-	if (len(args) < 3) {
-		fmt.Println("########### Expecting two Argumemnts ... Exiting")
-		return
-	}
-	//done chan int
+func Init() {
+	//initialize
 	done := make(chan bool, 1)
-	wg.Add(THREAD_COUNT)
 	counter = 0
-	data = "!function(a){\"function\"==typeof define&&define.amd?define([\"jquery\"],a):\"object\"==typeof exports?module.exports=a:a(jQuery)}(function(a){function b(b){var g=b||window.event,h=i.call(arguments,1),j=0,l=0,m=0,n=0,o=0,p=0;if(b=a.event.fix(g),b.type=\"mousewheel\",\"detail\"in g&&(m=-1*g.detail),\"wheelDelta\"in g&&(m=g.wheelDelta),\"wheelDeltaY\"in g&&(m=g.wheelDeltaY),\"wheelDeltaX\"in g&&(l=-1*g.wheelDeltaX),\"axis\"in g&&g.axis===g.HORIZONTAL_AXIS&&(l=-1*m,m=0),j=0===m?l:m,\"deltaY\"in g&&(m=-1*g.deltaY,j=m),\"deltaX\"in g&&(l=g.deltaX,0===m&&(j=-1*l)),0!==m||0!==l){if(1===g.deltaMode){var q=a.data(this,\"mousewheel-line-height\");j*=q,m*=q,l*=q}else if(2===g.deltaMode){var r=a.data(this,\"mousewheel-page-height\");j*=r,m*=r,l*=r}if(n=Math.max(Math.abs(m),Math.abs(l)),(!f||f>n)&&(f=n,d(g,n)&&(f/=40)),d(g,n)&&(j/=40,l/=40,m/=40),j=Math[j>=1?\"floor\":\"ceil\"](j/f),l=Math[l>=1?\"floor\":\"ceil\"](l/f),m=Math[m>=1?\"floor\":\"ceil\"](m/f),k.settings.normalizeOffset&&this.getBoundingClientRect){var s=this.getBoundingClientRect();o=b.123456789"
+	wg.Add(CLIENTS)
 	// Setup the network based on the NetworkCredentials.json provided
-	setupNetwork()
+	initNetwork()
+
 	//Deploy chaincode
 	deployChaincode(done)
-
-	// time to messure overall execution of the testcase
-	defer timeTrack(time.Now(), "execution for LedgerStressTwoCliOnePeer.go ")
-	InvokeMultiThreads()
-	wg.Wait()
 }
 
 func InvokeMultiThreads() {
-	for j := 1; j <= THREAD_COUNT; j++ {
-		go func(val int) { //This arg required to know which thread is running
-			for i := 1; i <= TRX_COUNT/(THREAD_COUNT*2); i++ {
-				fmt.Printf("\n============== CLIENT%d ==============\n",val)
-				invokeChaincode()
+	curTime := time.Now()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			if counter%1000 == 0 {
+				elapsed := time.Since(curTime)
+				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
+				sleep(60)
+				curTime = time.Now()
 			}
-			wg.Done()
-		}(j)
-		go func(val int) { //This arg required to know which thread is running
-			for i := 1; i <= TRX_COUNT/(THREAD_COUNT*2); i++ {
-				fmt.Printf("\n============== CLIENT%d ==============\n",val)
-				invokeChaincode()
+			invokeChaincode("user_type1_1c1b79bb45") //For Z Machine
+			//invokeChaincode("test_user3")//For local Machine
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			if counter%1000 == 0 {
+				elapsed := time.Since(curTime)
+				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
+				sleep(60)
+				curTime = time.Now()
 			}
-			wg.Done()
-		}(j)
+			invokeChaincode("dashboarduser_type0_efeeb83216")
+			//invokeChaincode("test_user4")
+		}
+		wg.Done()
+	}()
+}
+
+//Cleanup methods to display useful information
+func tearDown() {
+	fmt.Println("....... State transfer is happening, Lets take a nap for 2 mins ......")
+	sleep(120)
+	val1, val2 := queryChaincode(counter)
+  fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
+
+	newVal,err := strconv.ParseInt(val2, 10, 64);
+	if  err != nil {
+			fmt.Println("Failed to convert ",val2," to int64\n Error: ", err)
+	}
+
+	//TODO: Block size again depends on the Block configuration in pbft config file
+	//Test passes when 2 * block height match with total transactions, else fails
+	if (newVal == counter) {
+		fmt.Println("\n######### Inserted ",TRX_COUNT, " records #########\n")
+		fmt.Println("######### TEST PASSED #########")
+	} else {
+		fmt.Println("######### TEST FAILED #########")
 	}
 }
 
-func displayChainHeight(){
-	startValue := 3
-	height := 0
-	var urlStr string
-	for i:=0;i<TOTAL_NODES;i++ {
-		urlStr = "http://172.17.0."+strconv.Itoa(startValue+i)+":5000"
-		height = chaincode.Monitor_ChainHeight(urlStr)
-		fmt.Println("################ Chaincode Height on "+urlStr+" is : ", height)
+//Execution starts here ...
+func main() {
+	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
+	if len(os.Args) <  1{
+		fmt.Println("Usage: go run LedgerStressTwoCliOnePeer.go Utils.go")
+		return;
 	}
-}
+	//TODO: Have a regular expression to check if the give argument is correct format
+	/*if !strings.Contains(os.Args[1], "http://") {
+		fmt.Println("Error: Argument submitted is not right format ex: http://127.0.0.1:5000 ")
+		return;
+	}*/
+	//Get the URL
+	//url := os.Args[1]
+	// time to messure overall execution of the testcase
+	defer TimeTracker(time.Now(), "Total execution time for LedgerStressOneCliOnePeer.go ")
 
-func timeTrack(start time.Time, name string) {
-	elapsed := time.Since(start)
-	// Should we mask this delay ?
-	//sleep(10)
-
-	val1, val2 := queryChaincode()
-	var exitCounter = 0;
-	for val2 != strconv.FormatInt(counter, 10) && exitCounter < 3 {
-		fmt.Printf("\n########### Peers are not in Sync , Check again after 5 sec")
-		sleep(5)
-		_, val2 = queryChaincode()
-		exitCounter ++;
-		/*if (exitCounter == 3) {
-			//Get the heights
-			displayChainHeight()
-		}*/
-	}
-  displayChainHeight()
-	fmt.Printf("\n########### After Query Vals\n A = %s \nCounter = %s", val1, val2)
-	fmt.Printf("\n\n################# %s took %s \n\n", name, elapsed)
+	Init()
+	fmt.Println("========= Transacations execution stated  =========")
+	InvokeMultiThreads()
+	wg.Wait()
+	fmt.Println("========= Transacations execution ended  =========")
+	tearDown(); //url
 }

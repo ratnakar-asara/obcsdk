@@ -10,9 +10,9 @@ import (
 var peerNetworkSetup peernetwork.PeerNetwork
 
 func setupNetwork() {
-        //peernetwork.SetupLocalNetwork(4, true)
-	//peernetwork.PrintNetworkDetails()
-        peernetwork.GetNC_Local()
+	fmt.Println("Creating a local docker network")
+  peernetwork.SetupLocalNetwork(4, true)
+	peernetwork.PrintNetworkDetails()
 	peerNetworkSetup = chaincode.InitNetwork()
 	chaincode.InitChainCodes()
 	chaincode.RegisterUsers()

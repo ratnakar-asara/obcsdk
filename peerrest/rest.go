@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"crypto/tls"
 )
 
 /*
@@ -16,21 +17,27 @@ import (
 */
 func GetChainInfo(url string) (respBody string, respStatus string) {
 	//TODO : define a logger
-	//fmt.Println("GetChainInfo ... :", url)
-	response, err := http.Get(url)
+
+        tr := &http.Transport{
+	         TLSClientConfig:    &tls.Config{RootCAs: nil},
+	         DisableCompression: true,
+        }
+        client := &http.Client{Transport: tr}
+        response, err := client.Get(url)
 	if err != nil {
-		fmt.Printf("%s", err)
-		return err.Error(), "Error from GET request"
+			fmt.Printf("%s", err)
+			return err.Error(), "Error from GET request"
 	} else {
 		defer response.Body.Close()
 		contents, err := ioutil.ReadAll(response.Body)
-		if err != nil {
+	        if err != nil {
 			fmt.Printf("%s", err)
 			return err.Error(), "Error from GET request"
 		}
 		return string(contents), response.Status
 	}
 }
+
 
 /*
   Issue POST request to BlockChain resource.
@@ -41,13 +48,14 @@ func GetChainInfo(url string) (respBody string, respStatus string) {
 */
 func PostChainAPI(url string, payLoad []byte) (respBody string, respStatus string) {
 
-	//fmt.Println(">>>>> From postchain >>> ", url)
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payLoad))
-	//req.Header.Set("X-Custom-Header", "myvalue")
-	req.Header.Set("Content-Type", "application/json")
+	//fmt.Println(">>>>> From secure postchain >>> ", url)
+        tr := &http.Transport{
+	         TLSClientConfig:    &tls.Config{RootCAs: nil},
+	         DisableCompression: true,
+        }
+        client := &http.Client{Transport: tr}
+	response, err := client.Post(url, "json", bytes.NewBuffer(payLoad))
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
 	var errCount int
 	if err != nil {
 		log.Println("Error", url, err)
@@ -55,12 +63,12 @@ func PostChainAPI(url string, payLoad []byte) (respBody string, respStatus strin
 		return err.Error(), "There was an error Posting http Request"
 	}
 	errCount = 0
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Println("Error")
 	}
-	//fmt.Println("From postchain >>> response Status:", resp.Status)
-	//fmt.Println("From postchain >>> response Body:", body)
-	return string(body), resp.Status
+	//fmt.Println("From secure postchain >>> response Status:", response.Status)
+	//fmt.Println("From secure postchain >>> response Body:", body)
+	return string(body), response.Status
 }

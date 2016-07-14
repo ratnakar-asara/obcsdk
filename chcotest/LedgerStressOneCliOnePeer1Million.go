@@ -27,12 +27,11 @@ var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64
 var argA = []string{"a"}
 var argB = []string{"counter"}
-
-var counter int64
 var wg sync.WaitGroup
+var counter int64
 
 const (
-	TRX_COUNT = 20000 //3000000 Enable for long runs
+	TRX_COUNT = 3000000 //10000000 //3000000 Enable for long runs
 )
 
 func initNetwork() {
@@ -72,8 +71,8 @@ func invokeLoop() {
 
 //Cleanup methods to display useful information
 func tearDown() {
-	fmt.Println("....... State transfer is happening, Lets take a nap for two minute ......")
-	sleep(120)
+	fmt.Println("....... State transfer is happening, Lets take a nap for a minute ......")
+	sleep(60)
 	fmt.Println("========= Counter is", counter)
 	val1, val2 := queryChaincode(counter)
 	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
@@ -87,7 +86,7 @@ func tearDown() {
 	//TODO: Block size again depends on the Block configuration in pbft config file
 	//Test passes when 2 * block height match with total transactions, else fails
 	if (newVal == counter) {
-		fmt.Println("\n######### Inserted ",counter, " records #########\n")
+		fmt.Println("\n######### Inserted ",TRX_COUNT, " records #########\n")
 		fmt.Println("######### TEST PASSED #########")
 	} else {
 		fmt.Println("######### TEST FAILED #########")
@@ -114,17 +113,19 @@ func main() {
 
 	//maintained counter variable to compare with final query value
 	counter = 0
-	wg.Add(1)
-	done := make(chan bool, 1)
 
+	//done chan int
+	done := make(chan bool, 1)
+	wg.Add(1)
 	// Setup the network based on the NetworkCredentials.json provided
 	initNetwork()
 
 	//Deploy chaincode
 	deployChaincode(done)
-  fmt.Println("========= Transacations execution stated  =========")
+	fmt.Println("========= Transacations execution stated  =========")
 	invokeLoop()
 	wg.Wait()
 	fmt.Println("========= Transacations execution ended  =========")
+
 	tearDown()
 }

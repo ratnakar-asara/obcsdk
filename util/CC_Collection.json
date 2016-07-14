@@ -8,6 +8,6 @@
   },
   {"name":"mycc",
    "type": "GOLANG",
-   "path" :"https://github.com/ratnakar-asara/fabric/examples/chaincode/go/chaincode_example02"
+   "path" :"https://github.com/asararatnakar/fabric/examples/chaincode/go/chaincode_example02"
   }
 ]

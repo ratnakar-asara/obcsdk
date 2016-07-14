@@ -285,6 +285,9 @@ func changeState_chaincode(url string, path string, restCallName string,
 	res := new(restCallResult_T)
 	err := json.Unmarshal([]byte(respBody), &res)
 	if err != nil {
+		log.Println("----------------------------------------------------------")
+		log.Println(respBody)
+		log.Println("----------------------------------------------------------")
 		log.Fatal("Error in unmarshalling: ", err)
 	}
 	//fmt.Println("res = ", *res)

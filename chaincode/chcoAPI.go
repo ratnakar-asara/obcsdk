@@ -60,7 +60,7 @@ func RegisterUsers() {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
-			url := "http://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
 			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
 			fmt.Println(msgStr)
 			register(url, user, secret)
@@ -69,7 +69,64 @@ func RegisterUsers() {
 		i++
 	}
 }
+func RegisterCustomUsers() {
+	fmt.Println("\nCalling RegisterCustomUsers ")
 
+	Peers := ThisNetwork.Peers
+
+	for i := 0; i < len(Peers) ; i++ {
+
+		userList := ThisNetwork.Peers[i].UserData
+		for user, secret := range userList {
+			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+			fmt.Println(msgStr)
+			register(url, user, secret)
+			if i == len(Peers)-1 {
+				//if
+				user = "dashboarduser_type0_efeeb83216"
+				secret = "12211933b3"
+				//TODO: Remove the hardcoding
+				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+				fmt.Println(msgStr)
+				register(url, user, secret)
+				user = "dashboarduser_type0_fa08214e3b"
+				secret = "460c3190dc"
+				//TODO: Remove the hardcoding
+				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+				fmt.Println(msgStr)
+				register(url, user, secret)
+				user = "dashboarduser_type0_e00e125cf9"
+				secret = "fe1a324f86"
+				//TODO: Remove the hardcoding
+				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+				fmt.Println(msgStr)
+				register(url, user, secret)
+				user = "dashboarduser_type0_e0ee60d5af"
+				secret = "bc6911cfd0"
+			}
+		}
+		fmt.Println("Done Registering ", len(userList), "users on ", Peers[i].PeerDetails["name"])
+	}
+}
+
+func RegisterUsers2() {
+	fmt.Println("\nCalling Register ")
+
+	//testuser := peernetwork.AUser(ThisNetwork)
+	Peers := ThisNetwork.Peers
+	for i:= 0;i < len(Peers)-2;i++ {
+
+		userList := ThisNetwork.Peers[i].UserData
+		for user, secret := range userList {
+			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+			fmt.Println(msgStr)
+			register(url, user, secret)
+		}
+		fmt.Println("Done Registering ", len(userList), "users on ", Peers[i].PeerDetails["name"])
+	}
+}
 /*
    deploys a chaincode in the fabric to later execute functions on this deployed chaincode
    Takes two arguments
@@ -121,15 +178,13 @@ func Deploy(args []string, depargs []string) error {
 		//fmt.Println("Value in State : ", peer.State)
 		//fmt.Println("Value in State : ", peer.PeerDetails["state"])
 		//aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"]
-		url := "http://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
+		url := "https://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
 		txId := changeState(url, ChainCodeDetails["path"], restCallName, dargs, auser, funcName)
 		//storing the value of most recently deployed chaincode inside chaincode details if no tagname or versioning
 		ChainCodeDetails["dep_txid"] = txId
 		if len(tagName) != 0 {
 			Versions[tagName] = txId
 		}
-		//fmt.Println(ChainCodeDetails["dep_txid"])
-		//ChainCodeDetails["deployed"] = "true"
 	}
 	return err
 }
@@ -180,7 +235,7 @@ func Invoke(args []string, invokeargs []string) (id string, err error) {
 	aPeer, _ := peernetwork.APeer(ThisNetwork)
 	//fmt.Println(aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"])
 	ip, port, auser := peernetwork.AUserFromAPeer(*aPeer)
-	url := "http://" + ip + ":" + port
+	url := "https://" + ip + ":" + port
 	//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, invargs, url, auser)
 	//fmt.Println(msgStr0)
 	var txId string
@@ -246,7 +301,7 @@ func InvokeOnPeer(args []string, invokeargs []string) (id string, err error) {
 		fmt.Println("Inside invoke3: ", err2)
 		return "", err2
 	} else {
-		url := "http://" + ip + ":" + port
+		url := "https://" + ip + ":" + port
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, invargs, url, auser, host)
 		//fmt.Println(msgStr0)
 		if (len(tagName) > 0) {
@@ -307,10 +362,15 @@ func InvokeAsUser(args []string, invokeargs []string) (id string, err error) {
 		fmt.Println("Inside InvokeAsUser: ", err2)
 		return "", err2
 	} else {
-		url := "http://" + ip + ":" + port
+		url := "https://" + ip + ":" + port
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, invargs, url, auser)
 		//fmt.Println(msgStr0)
-		txId := changeState(url, Versions[tagName], restCallName, invargs, auser, funcName)
+		var txId string
+		if len(tagName) > 0 {
+			txId = changeState(url, Versions[tagName], restCallName, invargs, auser, funcName)
+		}else {
+			txId = changeState(url, ChainCodeDetails["dep_txid"], restCallName, invargs, auser, funcName)
+		}
 		return txId, errors.New("")
 	}
 }
@@ -358,11 +418,11 @@ func Query(args []string, queryArgs []string) (id string, err error) {
 	}
 	restCallName := "query"
 	//ip, port, auser := peernetwork.AUserFromNetwork(ThisNetwork)
-	//url := "http://" + ip + ":" + port
+	//url := "https://" + ip + ":" + port
 	peer, auser := peernetwork.AUserFromNetwork(ThisNetwork)
 	//fmt.Println("Value in State : ", peer.State)
 	//aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"]
-	url := "http://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
+	url := "https://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
 
 	var txId string
 	msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, queryArgs, url, auser)
@@ -431,7 +491,7 @@ func QueryOnHost(args []string, queryargs []string) (id string, err error) {
 		fmt.Println("Inside Query: ", err2)
 		return "", err2
 	} else {
-		url := "http://" + ip + ":" + port
+		url := "https://" + ip + ":" + port
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, qryargs, url, auser, host)
 		//fmt.Println(msgStr0)
 		if (len(tagName) > 0) {
@@ -449,10 +509,10 @@ func GetChainHeight(host string) (ht int, err error) {
 			fmt.Println("Inside GetChainHeight chcoAPI.....")
 			ip, port, _, err2 := peernetwork.AUserFromThisPeer(ThisNetwork, host)
 			if err2 != nil {
-				fmt.Println("Inside Query: ", err2)
+				fmt.Println("Inside GetChainHeight: ", err2)
 				return -1, err2
 			} else {
-				url := "http://" + ip + ":" + port
+				url := "https://" + ip + ":" + port
 				ht := Monitor_ChainHeight(url)
 				return ht, errors.New("")
 			}

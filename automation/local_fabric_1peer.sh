@@ -6,8 +6,6 @@ USE_PORT=30000
 #PEER_IMAGE=pushdocker/working:vagrant2
 #OBCCA_IMAGE=pushdocker/obcca:vagrant2
 
-CONSENSUS=pbft
-PBFT_MODE=batch
 WORKDIR=$(pwd)
 
 # Membersrvc
@@ -35,10 +33,6 @@ docker run -d --name=PEER0 -it \
                 -e CORE_PEER_PKI_TCA_PADDR=$IP:50051 \
                 -e CORE_PEER_PKI_TLSCA_PADDR=$IP:50051 \
                 -e CORE_PEER_LISTENADDRESS=0.0.0.0:30303 \
-                -e CORE_PEER_VALIDATOR_CONSENSUS_PLUGIN=$CONSENSUS \
-                -e CORE_PBFT_GENERAL_MODE=$PBFT_MODE \
-                -e CORE_PBFT_GENERAL_N=$NUM_PEERS \
-                -e CORE_PBFT_GENERAL_TIMEOUT_REQUEST=10s \
                 -e CORE_PEER_LOGGING_LEVEL=error \
                 -e CORE_VM_DOCKER_TLS_ENABLED=false \
                 -e CORE_SECURITY_ENROLLID=test_vp0 \
@@ -69,10 +63,6 @@ docker run  -d --name=PEER$peer_id -it \
                 -e CORE_PEER_PKI_TCA_PADDR=$IP:50051 \
                 -e CORE_PEER_PKI_TLSCA_PADDR=$IP:50051 \
                 -e CORE_PEER_LISTENADDRESS=0.0.0.0:30303 \
-                -e CORE_PEER_VALIDATOR_CONSENSUS_PLUGIN=$CONSENSUS \
-                -e CORE_PBFT_GENERAL_MODE=$PBFT_MODE \
-                -e CORE_PBFT_GENERAL_N=$NUM_PEERS \
-                -e CORE_PBFT_GENERAL_TIMEOUT_REQUEST=10s \
                 -e CORE_PEER_LOGGING_LEVEL=error \
                 -e CORE_VM_DOCKER_TLS_ENABLED=false \
                 -e CORE_SECURITY_ENROLLID=$USER_NAME \
@@ -136,12 +126,12 @@ done
 
 docker kill $(docker ps -q) 1>/dev/null 2>&1
 docker ps -aq -f status=exited | xargs docker rm 1>/dev/null 2>&1
-#rm LOG*
+rm LOG*
 docker rm -f $(docker ps -aq)
 
-echo "--------> Setting default command line Arg values to without security & consensus and starts 4 peers"
-: ${SECURITY:="Y"}
-: ${NUM_PEERS="4"}
+echo "--------> Setting default command line Arg values to without security & consensus and starts 5 peers"
+: ${SECURITY:="N"}
+: ${NUM_PEERS="5"}
 SECURITY=$(echo $SECURITY | tr a-z A-Z)
 
 echo "Number of PEERS are $NUM_PEERS"

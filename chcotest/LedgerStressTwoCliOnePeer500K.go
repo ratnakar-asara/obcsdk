@@ -19,7 +19,7 @@ var counter int64
 var wg sync.WaitGroup
 
 const(
-	TRX_COUNT = 20000
+	TRX_COUNT = 1000000
 	CLIENTS = 2
 )
 
@@ -29,15 +29,15 @@ func initNetwork() {
 	peerNetworkSetup = chaincode.InitNetwork()
 	chaincode.InitChainCodes()
 	fmt.Println("========= Register Users =========")
-	chaincode.RegisterUsers()
+	chaincode.RegisterCustomUsers()
 }
 
-func invokeChaincode(peer string ) {
+func invokeChaincode(user string ) {
 	counter++
-	arg1Construct := []string{"mycc", "invoke", peer}
+	arg1Construct := []string{CHAINCODE_NAME, "invoke", user}
 	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), DATA, "counter"}
 
-	_,_ = chaincode.InvokeOnPeer(arg1Construct, arg2Construct)
+	_,_ = chaincode.InvokeAsUser(arg1Construct, arg2Construct)
 }
 
 func Init() {
@@ -52,41 +52,40 @@ func Init() {
 	deployChaincode(done)
 }
 
-func InvokeLoop() {
-		curTime := time.Now()
-		go func() {
-			for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-				if counter%1000 == 0 {
-					elapsed := time.Since(curTime)
-					fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
-					curTime = time.Now()
-				}
-				invokeChaincode("PEER0")
+func InvokeMultiThreads() {
+	curTime := time.Now()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			if counter%1000 == 0 {
+				elapsed := time.Since(curTime)
+				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
+				curTime = time.Now()
 			}
-			wg.Done()
-		}()
-		go func() {
-			for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-				if counter%1000 == 0 {
-					elapsed := time.Since(curTime)
-					fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
-					curTime = time.Now()
-				}
-				invokeChaincode("PEER1")
+			invokeChaincode("test_user3")
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			if counter%1000 == 0 {
+				elapsed := time.Since(curTime)
+				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
+				curTime = time.Now()
 			}
-			wg.Done()
-		}()
+			invokeChaincode("test_user4")
+		}
+		wg.Done()
+	}()
 }
 
 //Cleanup methods to display useful information
 func tearDown() {
 	fmt.Println("....... State transfer is happening, Lets take a nap for 2 mins ......")
-	sleep(120)
+	sleep(60)
 	val1, val2 := queryChaincode(counter)
-	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
+  fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
 
 	newVal,err := strconv.ParseInt(val2, 10, 64);
-
 	if  err != nil {
 			fmt.Println("Failed to convert ",val2," to int64\n Error: ", err)
 	}
@@ -94,19 +93,18 @@ func tearDown() {
 	//TODO: Block size again depends on the Block configuration in pbft config file
 	//Test passes when 2 * block height match with total transactions, else fails
 	if (newVal == counter) {
-		fmt.Println("\n######### Inserted ",counter, " records #########\n")
+		fmt.Println("\n######### Inserted ",TRX_COUNT, " records #########\n")
 		fmt.Println("######### TEST PASSED #########")
 	} else {
 		fmt.Println("######### TEST FAILED #########")
 	}
-
 }
 
 //Execution starts here ...
 func main() {
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
-	if len(os.Args) < 1{
-		fmt.Println("Usage: go run LedgerStressTwoCliTwoPeer.go Utils.go")
+	if len(os.Args) <  1{
+		fmt.Println("Usage: go run LedgerStressTwoCliOnePeer500K.go Utils.go")
 		return;
 	}
 	//TODO: Have a regular expression to check if the give argument is correct format
@@ -116,15 +114,13 @@ func main() {
 	}*/
 	//Get the URL
 	//url := os.Args[1]
-
 	// time to messure overall execution of the testcase
-	defer TimeTracker(time.Now(), "Total execution time for LedgerStressTwoCliTwoPeer.go ")
-
+	defer TimeTracker(time.Now(), "Total execution time for LedgerStressTwoCliOnePeer500K.go ")
 
 	Init()
 	fmt.Println("========= Transacations execution stated  =========")
-	InvokeLoop()
+	InvokeMultiThreads()
 	wg.Wait()
 	fmt.Println("========= Transacations execution ended  =========")
-	tearDown();
+	tearDown(); //url
 }

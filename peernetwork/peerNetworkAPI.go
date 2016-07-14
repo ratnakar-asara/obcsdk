@@ -1,12 +1,12 @@
 package peernetwork
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"log"
+	"os/exec"
 	"strings"
 	"time"
-	"os/exec"
 )
 
 /*
@@ -40,6 +40,17 @@ func PrintNetworkDetails() {
 		}
 		fmt.Println("\n")
 	}
+
+}
+
+
+/*
+ Get Number of Peers on network
+*/
+
+func GetNumberOfPeers(thisNetwork PeerNetwork) int{
+	Peers := thisNetwork.Peers
+        return len(Peers)
 }
 
 /*
@@ -81,7 +92,7 @@ func APeer(thisNetwork PeerNetwork) (thisPeer *Peer, err error) {
 	//get any peer that has at a minimum one userData and one peerDetails
 	for peerIter := range Peers {
 		if (len(Peers[peerIter].UserData) > 0) && (len(Peers[peerIter].PeerDetails) > 0) {
-			if Peers[peerIter].State == 0 ||  Peers[peerIter].State == 2 || Peers[peerIter].State == 4 {
+			if Peers[peerIter].State == RUNNING || Peers[peerIter].State == STARTED || Peers[peerIter].State == UNPAUSED {
 				aPeer = &Peers[peerIter]
 			}
 		}
@@ -131,13 +142,9 @@ func AUserFromNetwork(thisNetwork PeerNetwork) (thisPeer *Peer, user string) {
 	aPeer, _ := APeer(thisNetwork)
 	users := aPeer.UserData
 
-	//fmt.Println(" ip ", aPeer.PeerDetails["ip"])
 	for u, _ = range users {
 		break
 	}
-	//fmt.Println(" ip ", aPeer.UserData["ip"])
-	//fmt.Println(" ip ", user)
-	//return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], u
 	return aPeer, u
 }
 
@@ -172,17 +179,19 @@ func AUserFromThisPeer(thisNetwork PeerNetwork, host string) (ip string, port st
 
 	//get a random peer that has at a minimum one userData and one peerDetails
 	for peerIter := range Peers {
-		if Peers[peerIter].State == 0 {
-				if (strings.Contains(host, ":")) {
-					if strings.Contains(Peers[peerIter].PeerDetails["ip"], host) {
-						aPeer = &Peers[peerIter]
-					}
-				}else { //host: "vp1"
-					if strings.Contains(Peers[peerIter].PeerDetails["name"], host) {
-						//fmt.Println("Inside name IP resolution")
-						aPeer = &Peers[peerIter]
-					}
+		if Peers[peerIter].State == RUNNING || Peers[peerIter].State == STARTED || Peers[peerIter].State == UNPAUSED  {
+			if strings.Contains(host, ":") {
+				if strings.Contains(Peers[peerIter].PeerDetails["ip"], host) {
+					aPeer = &Peers[peerIter]
+          break
 				}
+			} else { //host: "vp1"
+				if strings.Contains(Peers[peerIter].PeerDetails["name"], host) {
+					//fmt.Println("Inside name IP resolution")
+					aPeer = &Peers[peerIter]
+          break
+				}
+			}
 		}
 	}
 
@@ -193,12 +202,11 @@ func AUserFromThisPeer(thisNetwork PeerNetwork, host string) (ip string, port st
 			break
 		}
 		return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], u, err1
-	}else {
-			errStr = fmt.Sprintf("%s, Not found on network", host)
-			return "", "", "", errors.New(errStr)
+	} else {
+		errStr = fmt.Sprintf("\n %s, Not found on network", host)
+		return "", "", "", errors.New(errStr)
 	}
 }
-
 
 /*
   finds the peer address corresponding to a given user
@@ -217,17 +225,21 @@ func PeerOfThisUser(thisNetwork PeerNetwork, username string) (ip string, port s
 	//fmt.Println("Inside function")
 	//get a random peer that has at a minimum one userData and one peerDetails
 	for peerIter := range Peers {
-		if (len(Peers[peerIter].UserData) > 0) && (len(Peers[peerIter].PeerDetails) > 0) {
-			if Peers[peerIter].State == 0 {
+		if len(Peers[peerIter].UserData) > 0 && len(Peers[peerIter].PeerDetails) > 0 && (Peers[peerIter].State == RUNNING ||  Peers[peerIter].State == STARTED){
 				if _, ok := Peers[peerIter].UserData[username]; ok {
-					fmt.Println("Found %s in network", username)
+					//fmt.Printf("Found %s in network", username)
 					aPeer = &Peers[peerIter]
 				}
-			}
 		}
 	}
 	if aPeer == nil {
-		errStr = fmt.Sprintf("%s, Not found on network", username)
+		//TODO: Change these details on Z aswell, need a permanent solution
+		//if (username == "test_user4" || username == "test_user5" || username == "test_user6" || username == "test_user7") {
+		if (username == "dashboarduser_type0_efeeb83216" || username == "dashboarduser_type0_fa08214e3b" || username == "dashboarduser_type0_e00e125cf9" || username == "dashboarduser_type0_e0ee60d5af"){
+			aPeer = &Peers[3]
+			return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], username, err1
+		}
+		errStr = fmt.Sprintf("PeerOfThisUser   %s, Not found on network", username)
 		return "", "", "", errors.New(errStr)
 	} else {
 		return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], username, err1
@@ -254,7 +266,7 @@ func GetPeerState(thisNetwork PeerNetwork, peername string) (currPeer *Peer, err
 	}
 
 	if aPeer == nil {
-		errStr = fmt.Sprintf("%s, Not found on network", peername)
+		errStr = fmt.Sprintf("GetPeerState %s, Not found on network", peername)
 		emptyPD := new(Peer)
 		return emptyPD, errors.New(errStr)
 	} else {
@@ -273,7 +285,6 @@ func SetPeerState(thisNetwork PeerNetwork, peername string, curstate int) (peerD
 	Peers := thisNetwork.Peers
 	var aPeer *Peer
 	var errStr string
-	//fmt.Println("Inside function")
 	//get a peerDetails from peername
 	fullName, _ := GetFullPeerName(thisNetwork, peername)
 	for peerIter := range Peers {
@@ -285,7 +296,7 @@ func SetPeerState(thisNetwork PeerNetwork, peername string, curstate int) (peerD
 	}
 
 	if aPeer == nil {
-		errStr = fmt.Sprintf("%s, Not found on network", peername)
+		errStr = fmt.Sprintf("SetPeerState %s, Not found on network", peername)
 		emptyPD := make(map[string]string)
 		return emptyPD, errors.New(errStr)
 	} else {
@@ -295,20 +306,19 @@ func SetPeerState(thisNetwork PeerNetwork, peername string, curstate int) (peerD
 	}
 }
 
-
 func PausePeersLocal(thisNetwork PeerNetwork, peers []string) {
 
 	i := 0
 	for i < len(peers) {
 		cmd := "docker pause " + peers[i]
 		out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-                if (err != nil) {
-                     fmt.Println("Could not Pause %s", peers[i])
-                     log.Fatal(err)
-                }
-                fmt.Printf("peer %s", out)
+		if err != nil {
+			fmt.Println("Could not Pause %s", peers[i])
+			log.Fatal(err)
+		}
+		fmt.Printf("peer %s", out)
 		time.Sleep(5000 * time.Millisecond)
-		SetPeerState(thisNetwork, peers[i], 3)
+		SetPeerState(thisNetwork, peers[i], PAUSED)
 		i++
 	}
 }
@@ -316,14 +326,14 @@ func PausePeersLocal(thisNetwork PeerNetwork, peers []string) {
 func PausePeerLocal(thisNetwork PeerNetwork, peer string) {
 
 	cmd := "docker pause " + peer
-        out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-        if (err != nil) {
-           fmt.Println("Could not Pause %s", peer)
-           log.Fatal(err)
-        }
-        fmt.Printf("Paused peer %s", out)
+	out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println("Could not Pause %s", peer)
+		log.Fatal(err)
+	}
+	fmt.Printf("Paused peer %s", out)
 	time.Sleep(5000 * time.Millisecond)
-	SetPeerState(thisNetwork, peer, 3)
+	SetPeerState(thisNetwork, peer, PAUSED)
 
 }
 
@@ -332,112 +342,108 @@ func UnpausePeersLocal(thisNetwork PeerNetwork, peers []string) {
 	i := 0
 	for i < len(peers) {
 		cmd := "docker unpause " + peers[i]
-                out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-                if (err != nil) {
-                   fmt.Println("Could not Unpause %s ", peers[i])
-                   log.Fatal(err)
-                }
-                fmt.Printf("Unpaused peer %s", out)
+		out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+		if err != nil {
+			fmt.Println("Could not Unpause %s ", peers[i])
+			log.Fatal(err)
+		}
+		fmt.Printf("Unpaused peer %s", out)
 		exec.Command(cmd)
 		time.Sleep(5000 * time.Millisecond)
-		SetPeerState(thisNetwork, peers[i], 4)
+		SetPeerState(thisNetwork, peers[i], UNPAUSED)
 		i++
 	}
 }
 
-
 func UnpausePeerLocal(thisNetwork PeerNetwork, peer string) {
 
 	cmd := "docker unpause " + peer
-        out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-        if (err != nil) {
-           fmt.Println("Could not Unpause %s ", peer)
-           log.Fatal(err)
-        }
-        fmt.Printf("Paused peer %s", out)
+	out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println("Could not Unpause %s ", peer)
+		log.Fatal(err)
+	}
+	fmt.Printf("Paused peer %s", out)
 	time.Sleep(5000 * time.Millisecond)
-	SetPeerState(thisNetwork, peer, 4)
+	SetPeerState(thisNetwork, peer, UNPAUSED)
 
 }
-
 
 func StopPeersLocal(thisNetwork PeerNetwork, peers []string) {
 
 	i := 0
 	for i < len(peers) {
 		cmd := "docker stop " + peers[i]
-                out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-                if (err != nil) {
-                   fmt.Println("Could not Stop %s successfully", peers[i])
-                   log.Fatal(err)
-                }
-                fmt.Printf("Stopped peer %s successfully", out)
+		out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+		if err != nil {
+			fmt.Println("Could not Stop %s successfully", peers[i])
+			log.Fatal(err)
+		}
+		fmt.Printf("Stopped peer %s successfully", out)
 		exec.Command(cmd)
 		time.Sleep(5000 * time.Millisecond)
-		SetPeerState(thisNetwork, peers[i], 1)
+		SetPeerState(thisNetwork, peers[i], STOPPED)
 		i++
 	}
 }
 
 func StartPeersLocal(thisNetwork PeerNetwork, peers []string) {
 
-	i := 0
-	for i < len(peers) {
+	for i := 0;i < len(peers);i++ {
 		cmd := "docker start " + peers[i]
-                out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-                if (err != nil) {
-                   fmt.Println("Could not Start %s successfully", peers[i])
-                   log.Fatal(err)
-                }
-                fmt.Printf("Started peer %s successfully", out)
+		out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+		if err != nil {
+			fmt.Println("Could not Start %s successfully", peers[i])
+			log.Fatal(err)
+		}
+		fmt.Printf("Started peer %s successfully", out)
 		exec.Command(cmd)
 		time.Sleep(5000 * time.Millisecond)
-		SetPeerState(thisNetwork, peers[i], 2)
-		i++
+		SetPeerState(thisNetwork, peers[i], STARTED)
 	}
 }
 func StartPeerLocal(thisNetwork PeerNetwork, peer string) {
 
 	cmd := "docker start " + peer
-  out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-  if (err != nil) {
-           fmt.Println("Could not Start %s successfully", peer)
-           log.Fatal(err)
-  }
-  fmt.Printf("Started peer %s successfully", out)
+	out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println("Could not Start %s successfully", peer)
+		log.Fatal(err)
+	}
+	fmt.Printf("Started peer %s successfully", out)
 	time.Sleep(5000 * time.Millisecond)
-	SetPeerState(thisNetwork, peer, 2)
+	SetPeerState(thisNetwork, peer, STARTED)
 }
 
 func StopPeerLocal(thisNetwork PeerNetwork, peer string) {
 
 	cmd := "docker stop " + peer
-        out, err := exec.Command("/bin/sh", "-c", cmd).Output()
-        if (err != nil) {
-           fmt.Println("Could not Stop %s ", peer)
-           log.Fatal(err)
-        }
-        fmt.Printf("Stopped peer %s successfully", out)
+	out, err := exec.Command("/bin/sh", "-c", cmd).Output()
+	if err != nil {
+		fmt.Println("Could not Stop %s ", peer)
+		log.Fatal(err)
+	}
+	fmt.Printf("Stopped peer %s successfully", out)
 	time.Sleep(5000 * time.Millisecond)
-	SetPeerState(thisNetwork, peer, 1)
+	SetPeerState(thisNetwork, peer, STOPPED)
 }
 
 func GetFullPeerName(thisNetwork PeerNetwork, shortname string) (name string, err error) {
 	Peers := thisNetwork.Peers
 	var aPeer *Peer
 	var errStr string
-	//fmt.Println("Inside function")
 	//get a peerDetails from peername
 	for peerIter := range Peers {
 		if (len(Peers[peerIter].UserData) > 0) && (len(Peers[peerIter].PeerDetails) > 0) {
 			if strings.Contains(Peers[peerIter].PeerDetails["name"], shortname) {
 				aPeer = &Peers[peerIter]
+        break
 			}
 		}
 	}
 
 	if aPeer == nil {
-		errStr = fmt.Sprintf("%s, Not found on network", shortname)
+		errStr = fmt.Sprintf("GetFullPeerName %s, Not found on network", shortname)
 		return "", errors.New(errStr)
 	} else {
 		return aPeer.PeerDetails["name"], errors.New("")

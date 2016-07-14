@@ -20,24 +20,24 @@ var wg sync.WaitGroup
 
 const(
 	TRX_COUNT = 20000
-	CLIENTS = 2
+	CLIENTS = 4
 )
 
 func initNetwork() {
 	fmt.Println("========= Init Network =========")
-	peernetwork.GetNC_Local()
+	//peernetwork.GetNC_Local()
 	peerNetworkSetup = chaincode.InitNetwork()
 	chaincode.InitChainCodes()
 	fmt.Println("========= Register Users =========")
-	chaincode.RegisterUsers()
+	chaincode.RegisterCustomUsers()
 }
 
-func invokeChaincode(peer string ) {
+func invokeChaincode(user string ) {
 	counter++
-	arg1Construct := []string{"mycc", "invoke", peer}
+	arg1Construct := []string{CHAINCODE_NAME, "invoke", user}
 	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), DATA, "counter"}
 
-	_,_ = chaincode.InvokeOnPeer(arg1Construct, arg2Construct)
+	_,_ = chaincode.InvokeAsUser(arg1Construct, arg2Construct)
 }
 
 func Init() {
@@ -52,38 +52,39 @@ func Init() {
 	deployChaincode(done)
 }
 
-func InvokeLoop() {
-		curTime := time.Now()
-		go func() {
-			for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-				if counter%1000 == 0 {
-					elapsed := time.Since(curTime)
-					fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
-					curTime = time.Now()
-				}
-				invokeChaincode("PEER0")
-			}
-			wg.Done()
-		}()
-		go func() {
-			for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-				if counter%1000 == 0 {
-					elapsed := time.Since(curTime)
-					fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
-					curTime = time.Now()
-				}
-				invokeChaincode("PEER1")
-			}
-			wg.Done()
-		}()
+func InvokeMultiThreads() {
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			invokeChaincode("dashboarduser_type0_efeeb83216")
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			invokeChaincode("dashboarduser_type0_fa08214e3b")
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			invokeChaincode("dashboarduser_type0_e00e125cf9")
+		}
+		wg.Done()
+	}()
+	go func() {
+		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
+			invokeChaincode("dashboarduser_type0_e0ee60d5af")
+		}
+		wg.Done()
+	}()
 }
 
 //Cleanup methods to display useful information
 func tearDown() {
-	fmt.Println("....... State transfer is happening, Lets take a nap for 2 mins ......")
-	sleep(120)
+	fmt.Println("....... State transfer is happening, Lets take a nap for 3 mins ......")
+	sleep(60)
 	val1, val2 := queryChaincode(counter)
-	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
+  fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
 
 	newVal,err := strconv.ParseInt(val2, 10, 64);
 
@@ -105,8 +106,8 @@ func tearDown() {
 //Execution starts here ...
 func main() {
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
-	if len(os.Args) < 1{
-		fmt.Println("Usage: go run LedgerStressTwoCliTwoPeer.go Utils.go")
+	if len(os.Args) <  1{
+		fmt.Println("Usage: go run LedgerStressFourCliOnePeer.go Utils.go")
 		return;
 	}
 	//TODO: Have a regular expression to check if the give argument is correct format
@@ -118,13 +119,12 @@ func main() {
 	//url := os.Args[1]
 
 	// time to messure overall execution of the testcase
-	defer TimeTracker(time.Now(), "Total execution time for LedgerStressTwoCliTwoPeer.go ")
-
+	defer TimeTracker(time.Now(), "Total execution time for LedgerStressFourCliOnePeer.go ")
 
 	Init()
 	fmt.Println("========= Transacations execution stated  =========")
-	InvokeLoop()
+	InvokeMultiThreads()
 	wg.Wait()
 	fmt.Println("========= Transacations execution ended  =========")
-	tearDown();
+	tearDown(); //url
 }

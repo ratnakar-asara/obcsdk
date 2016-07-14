@@ -55,7 +55,7 @@ const IP = "9.37.136.147"
 
 func SetupLocalNetwork(numPeers int, sec bool){
 
-    var cmd *exec.Cmd 
+    var cmd *exec.Cmd
     goroot := os.Getenv("GOROOT")
     pwd, _ := os.Getwd()
     fmt.Println("Initially ", pwd)
@@ -175,51 +175,34 @@ func initializePeers() (peers []Peer, name string) {
 
 	allPeers := make([]Peer, numOfPeersOnNetwork)
 
-	factor := numOfUsersOnNetwork / numOfPeersOnNetwork
+	//factor := numOfUsersOnNetwork / numOfPeersOnNetwork
 	remainder := numOfUsersOnNetwork % numOfPeersOnNetwork
-	i := 0
 	k := 0
 	//for each peerDetail we construct a new peer evenly distributing the list of users
-	for i < numOfPeersOnNetwork {
-		aPeer := new(Peer)
+	for i :=0; i < numOfPeersOnNetwork; i++{
+
 		aPeerDetail := make(map[string]string)
-		//name := "vp" + strconv.Itoa(i)
 		aPeerDetail["ip"] = peerDetails[i].IP
 		aPeerDetail["port"] = peerDetails[i].PORT
-		//aPeerDetail["name"] = name
 		aPeerDetail["name"] = peerDetails[i].NAME
 
-		//fmt.Println(aPeerDetail["ip"], aPeerDetail["port"], aPeerDetail["name"])
-
-		//fmt.Println("Getting and Initializing User details from network")
-
-		j := 0
 		userInfo := make(map[string]string)
-		for j < factor {
-			for k < numOfUsersOnNetwork {
-				//fmt.Println(" **********value in inside i", i , "k ", k, "factor", factor, " j ", j)
-				userInfo[userDetails[k].USER] = userDetails[k].SECRET
-				j++
-				k++
-				if j == factor {
-					break
-				}
-			}
-		}
+		userInfo[userDetails[i].USER] = userDetails[i].SECRET
 
+		aPeer := new(Peer)
 		aPeer.PeerDetails = aPeerDetail
 		aPeer.UserData = userInfo
 		aPeer.State = RUNNING
 		allPeers[i] = *aPeer
-		i++
 	}
 	//do we have any left over users details
 	if remainder > 0 {
 		for m := 0; m < remainder; m++ {
 			allPeers[m].UserData[userDetails[k].USER] = userDetails[k].SECRET
-			k++
+			k++;
 		}
 	}
+
 	return allPeers, Name
 }
 
