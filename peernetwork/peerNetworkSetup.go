@@ -88,11 +88,7 @@ func SetupLocalNetwork(numPeers int, sec bool) {
 }
 
 func GetNC_Local() {
-	//goroot := os.Getenv("GOROOT")
-	//pwd, _ := os.Getwd()
-	//fileName := pwd + "/networkcredentials"
 	fileName := "../automation/networkcredentials"
-
 	inputfile, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
@@ -208,9 +204,16 @@ func initializePeers() (peers []Peer, name string) {
 func initNetworkCredentials() ([]peerHTTP, []userData, string) {
 
 	pwd, _ := os.Getwd()
-	fmt.Println("CWD Inside initNetworkCredentials:", pwd)
-	file, err := os.Open(pwd + "/../util/NetworkCredentials.json")
-
+	fmt.Println(" Inside initNetworkCredentials ")
+	var fileName string
+	if os.Getenv("NETWORK") == "Z" {
+		fileName = "NetworkCredentials_Z.json" // For Z machine testing
+		fmt.Println("Using Z Machine network credentials from " + pwd + "/../util/" + fileName)
+	} else {
+		fileName = "NetworkCredentials.json" // For deafualt local machine setup
+		fmt.Println("Using Local Machine network credentials from " + pwd + "/../util/" + fileName)
+	}
+	file, err := os.Open(pwd + "/../util/" + fileName)
 	if err != nil {
 		fmt.Println("Error in opening NetworkCredentials file ", err)
 		log.Fatal("Error in opening Network Credential json File")

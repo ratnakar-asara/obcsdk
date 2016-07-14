@@ -14,14 +14,15 @@ import (
 /********** Test Objective : Ledger Stress with 1 Peer and 1 Client ************
 *
 *   Setup: 4 node peer network with security enabled
-*   1. Deploy chaincode
-*   2. Invoke 20K transactions (TODO: Should make this configurable ?)
+*   1. Deploy chaincode https://goo.gl/TysS79
+*   2. Invoke 1 Million trxns
 *      After each 10K transactions, sleep for 1 min, StateTransfer to take place
 *      All transactions takes place on single peer with single client
 *   3. Check the chain height and no of transactions successful and Pass tests
 *			 If results matches else Fail the test
 *
-* USAGE: go run LedgerStressOneCliOnePeer.go Utils.go http://172.17.0.3:5000
+* USAGE: NETWORK="LOCAL" go run LedgerStressOneCliOnePeer.go Utils.go
+*  This NETWORK env value could be LOCAL or Z
 *
 *********************************************************************/
 var peerNetworkSetup peernetwork.PeerNetwork
@@ -32,7 +33,7 @@ var wg sync.WaitGroup
 var counter int64
 
 const (
-	TRX_COUNT = 3000000 //10000000 //3000000 Enable for long runs
+	TRX_COUNT = 10000000 // 3000000 Enable for long runs
 )
 
 func initNetwork() {
@@ -61,7 +62,7 @@ func invokeLoop() {
 			if counter > 1 && counter%1000 == 0 {
 				elapsed := time.Since(curTime)
 				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed)
-				sleep(30)
+				sleep(30) //TODO: should we remove this delay ?
 				curTime = time.Now()
 			}
 			invokeChaincode()
@@ -73,7 +74,7 @@ func invokeLoop() {
 //Cleanup methods to display useful information
 func tearDown() {
 	fmt.Println("....... State transfer is happening, Lets take a nap for a minute ......")
-	sleep(60)
+	sleep(600)
 	fmt.Println("========= Counter is", counter)
 	val1, val2 := queryChaincode(counter)
 	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n", counter, val1, val2)

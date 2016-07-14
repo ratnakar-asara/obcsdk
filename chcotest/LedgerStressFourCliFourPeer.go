@@ -10,7 +10,16 @@ import (
 	"obcsdk/chaincode"
 	"obcsdk/peernetwork"
 )
-
+/********** Test Objective : Ledger Stress with 4 Clients, 4 Peers ************
+*
+*   Setup: 4 node peer network with security enabled
+*   1. Deploy chaincode https://goo.gl/TysS79
+*   2. Invoke 5K txns from each client simultaneously on 4 different peers
+*   3. Check if the counter value(20000) matches with query on "counter"
+*
+* USAGE: NETWORK="LOCAL" go run LedgerStressOneCliOnePeer.go Utils.go
+*  This NETWORK env value could be LOCAL or Z
+*********************************************************************/
 var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64
 var argA = []string{"a"}
@@ -62,7 +71,8 @@ func InvokeLoop() {
 				curTime = time.Now()
 			}
 			//invokeChaincode("PEER0") //For Local testing
-			invokeChaincode("vp0") //For Z -Testing
+			//invokeChaincode("vp0") //For Z -Testing
+			invokeChaincode(getPeer(0))
 		}
 		wg.Done()
 	}()
@@ -74,7 +84,8 @@ func InvokeLoop() {
 				curTime = time.Now()
 			}
 			//invokeChaincode("PEER1") //For Local testing
-			invokeChaincode("vp1") //For Z -Testing
+			//invokeChaincode("vp1") //For Z -Testing
+			invokeChaincode(getPeer(1))
 		}
 		wg.Done()
 	}()
@@ -86,7 +97,8 @@ func InvokeLoop() {
 				curTime = time.Now()
 			}
 			//invokeChaincode("PEER2") //For Local testing
-			invokeChaincode("vp2") //For Z -Testing
+			//invokeChaincode("vp2") //For Z -Testing
+			invokeChaincode(getPeer(2))
 		}
 		wg.Done()
 	}()
@@ -98,7 +110,8 @@ func InvokeLoop() {
 				curTime = time.Now()
 			}
 			//invokeChaincode("PEER3") //For Local testing
-			invokeChaincode("vp3") //For Z -Testing
+			//invokeChaincode("vp3") //For Z -Testing
+			invokeChaincode(getPeer(3))
 
 		}
 		wg.Done()

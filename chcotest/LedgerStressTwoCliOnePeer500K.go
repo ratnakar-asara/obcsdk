@@ -10,7 +10,16 @@ import (
 	"obcsdk/chaincode"
 	"obcsdk/peernetwork"
 )
-
+/********** Test Objective : Ledger Stress with 2 Clients and 1 Peer ************
+*
+*   Setup: 4 node peer network with security enabled
+*   1. Deploy chaincode https://goo.gl/TysS79
+*   2. Invoke 500K trxns from each client, simultaneously on a single peer
+*   3. Check if the counter value(5000000) matches with query value "counter"
+*
+* USAGE: NETWORK="LOCAL" go run LedgerStressOneCliOnePeer.go Utils.go
+*  This NETWORK env value could be LOCAL or Z
+*********************************************************************/
 var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64
 var argA = []string{"a"}
@@ -61,7 +70,8 @@ func InvokeMultiThreads() {
 				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
 				curTime = time.Now()
 			}
-			invokeChaincode("test_user3")
+			//invokeChaincode("test_user3")
+			invokeChaincode(getUser(0))
 		}
 		wg.Done()
 	}()
@@ -72,7 +82,8 @@ func InvokeMultiThreads() {
 				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
 				curTime = time.Now()
 			}
-			invokeChaincode("test_user4")
+			//invokeChaincode("test_user4")
+			invokeChaincode(getUser(1))
 		}
 		wg.Done()
 	}()

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -232,9 +233,7 @@ func PeerOfThisUser(thisNetwork PeerNetwork, username string) (ip string, port s
 		}
 	}
 	if aPeer == nil {
-		//TODO: Change these details on Z aswell, need a permanent solution
-		//if (username == "test_user4" || username == "test_user5" || username == "test_user6" || username == "test_user7") {
-		if username == "dashboarduser_type0_efeeb83216" || username == "dashboarduser_type0_fa08214e3b" || username == "dashboarduser_type0_e00e125cf9" || username == "dashboarduser_type0_e0ee60d5af" {
+		if checkIfNewUser(username) {
 			aPeer = &Peers[3]
 			return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], username, err1
 		}
@@ -243,6 +242,16 @@ func PeerOfThisUser(thisNetwork PeerNetwork, username string) (ip string, port s
 	} else {
 		return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], username, err1
 	}
+}
+
+func checkIfNewUser(username string) bool {
+	//TODO: Change these details on Z dynamically by reading a file
+	if os.Getenv("NETWORK") == "LOCAL" {
+		return (username == "test_user4" || username == "test_user5" || username == "test_user6" || username == "test_user7")
+	} else if os.Getenv("NETWORK") == "Z" {
+		return (username == "dashboarduser_type0_efeeb83216" || username == "dashboarduser_type0_fa08214e3b" || username == "dashboarduser_type0_e00e125cf9" || username == "dashboarduser_type0_e0ee60d5af")
+	}
+	return false
 }
 
 /*Gets the peer details corresponding to a given peer-name

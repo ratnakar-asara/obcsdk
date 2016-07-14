@@ -136,7 +136,7 @@ done
 
 docker kill $(docker ps -q) 1>/dev/null 2>&1
 docker ps -aq -f status=exited | xargs docker rm 1>/dev/null 2>&1
-#rm LOG*
+rm LOG*
 docker rm -f $(docker ps -aq)
 
 echo "--------> Setting default command line Arg values to without security & consensus and starts 4 peers"
@@ -197,7 +197,7 @@ for (( container_id=1; $container_id<="$((NUM_CONTAINERS))"; container_id++ ))
 do
         CONTAINER_ID=$(echo $CONTAINERS | awk -v con_id=$container_id '{print $con_id}')
         CONTAINER_NAME=$(docker inspect --format '{{.Name}}' $CONTAINER_ID |  sed 's/\///')
-        #docker logs -f $CONTAINER_ID > "LOGFILE_$CONTAINER_NAME"_"$CONTAINER_ID" &
+        docker logs -f $CONTAINER_ID > "LOGFILE_$CONTAINER_NAME"_"$CONTAINER_ID" &
 done
 
 # Writing Peer data into a file for Go SDK
@@ -244,8 +244,8 @@ echo "Client Credentials : "
 echo " "
         for ((i=0; i<=$NUM_CONTAINERS-1;i++))
         do
-        CLIENT_USER=$(awk '/users:/,/^[^ ]/' membersrvc.yaml | egrep "test_user$((i)):" | cut -d ":" -f 1 | tr -d " ")
-        CLIENT_SECRET_KEY=$(awk '/users:/,/^[^ ]/' membersrvc.yaml | egrep "test_user$((i)):" | cut -d ":" -f 2 | cut -d " " -f 3)
+        CLIENT_USER=$(awk '/users:/,/^[^ #]/' membersrvc.yaml | egrep "test_user$((i)):" | cut -d ":" -f 1 | tr -d " ")
+        CLIENT_SECRET_KEY=$(awk '/users:/,/^[^ #]/' membersrvc.yaml | egrep "test_user$((i)):" | cut -d ":" -f 2 | cut -d " " -f 3)
         echo "username: $CLIENT_USER  secretkey : $CLIENT_SECRET_KEY"
         echo "   { \"username\" : \"$CLIENT_USER\", \"secret\" : \"$CLIENT_SECRET_KEY\" } , " >> $WORKDIR/networkcredentials
 
@@ -273,5 +273,5 @@ done
 
         echo "   ],"  >> $WORKDIR/networkcredentials
 
-        echo " \"Name\": \"localpeer_ramesh\" " >> $WORKDIR/networkcredentials
+        echo " \"Name\": \"LocalPeer_Network\" " >> $WORKDIR/networkcredentials
         echo "} "  >> $WORKDIR/networkcredentials
