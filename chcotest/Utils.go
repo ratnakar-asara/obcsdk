@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
 	"obcsdk/chaincode"
 )
 
-// A Utility program, contains several utility methods that can be used across programs
+// A Utility program, contains several utility methods that can be used across
+// test programs
 const (
 	CHAINCODE_NAME = "mycc"
 	INIT           = "init"
@@ -25,14 +27,13 @@ func TimeTracker(start time.Time, info string) {
 }
 
 func getChainHeight(url string) int {
-	/*var urlStr string
-	//TODO: peername - shouldn't hardcoded ??
-	urlStr = "http://172.17.0.3:5000"*/
 	height := chaincode.Monitor_ChainHeight(url)
 	fmt.Println("=========  Chaincode Height on "+url+" is : ", height)
 	return height
 }
 
+// This is a helper function to generate a random string of the requested length
+// This is to make each Deploy transaction unique
 func RandomString(strlen int) string {
 	rand.Seed(time.Now().UTC().UnixNano())
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -71,17 +72,30 @@ func queryChaincode(counter int64) (res1, res2 string) {
 	return val, counterArg
 }
 
-//TODO: This function doesn't work outside vagrant, need to relook
-/*func displayChainHeight(nodes int){
-	startValue := 3
-	height := 0
-	var urlStr string
-	for i:=0;i<nodes;i++ {
-		urlStr = "http://172.17.0."+strconv.Itoa(startValue+i)+":5000"
-		height = chaincode.Monitor_ChainHeight(urlStr)
-		fmt.Println("################ Chaincode Height on "+urlStr+" is : ", height)
+//TODO : These values should read from a configurable file
+var LocalUsers = []string{"test_user3", "test_user4", "test_user5", "test_user6", "test_user7"}
+var ZUsers = []string{"dashboarduser_type0_efeeb83216", "dashboarduser_type0_fa08214e3b", "dashboarduser_type0_e00e125cf9", "dashboarduser_type0_e0ee60d5af"}
+
+var LocalPeers = []string{"PEER0", "PEER1", "PEER2", "PEER3"}
+var ZPeers = []string{"vp0", "vp1", "vp2", "vp3"}
+
+//Get the user names based on network environment Z/Local
+func getUser(userNumber int) string {
+	if os.Getenv("NETWORK") == "Z" {
+		return ZUsers[userNumber]
+	} else {
+		return LocalUsers[userNumber]
 	}
-}*/
+}
+
+//Get the peer name based on network environment Z/Local
+func getPeer(peerNumber int) string {
+	if os.Getenv("NETWORK") == "Z" {
+		return ZPeers[peerNumber]
+	} else {
+		return LocalPeers[peerNumber]
+	}
+}
 
 func sleep(secs int64) {
 	time.Sleep(time.Second * time.Duration(secs))

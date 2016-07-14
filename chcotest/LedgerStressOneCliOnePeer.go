@@ -11,18 +11,17 @@ import (
 	"obcsdk/peernetwork"
 )
 
-/********** Test Objective : Ledger Stress with 1 Peer and 1 Client ************
+/********** Test Objective : Ledger Stress with 1 Client and 1 Peer ************
 *
 *   Setup: 4 node peer network with security enabled
-*   1. Deploy chaincode
-*   2. Invoke 20K transactions (TODO: Should make this configurable ?)
-*      After each 10K transactions, sleep for 1 min, StateTransfer to take place
+*   1. Deploy chaincode https://goo.gl/TysS79
+*   2. Invoke 20K transactions (TODO: make this value configurable ?)
+*      After each 10K trxs, sleep for 30 secs, StateTransfer to take place
 *      All transactions takes place on single peer with single client
-*   3. Check the chain height and no of transactions successful and Pass tests
-*			 If results matches else Fail the test
+*   3. Check if the counter value(20000) matches with query on "counter"
 *
-* USAGE: go run LedgerStressOneCliOnePeer.go Utils.go http://172.17.0.3:5000
-*
+* USAGE: NETWORK="LOCAL" go run LedgerStressOneCliOnePeer.go Utils.go
+*  This NETWORK env value could be LOCAL or Z
 *********************************************************************/
 var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64

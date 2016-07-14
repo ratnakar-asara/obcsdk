@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"obcsdk/peernetwork"
@@ -60,7 +61,7 @@ func RegisterUsers() {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
-			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+			url := getURL(Peers[i].PeerDetails["ip"], Peers[i].PeerDetails["port"])
 			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
 			fmt.Println(msgStr)
 			register(url, user, secret)
@@ -69,6 +70,17 @@ func RegisterUsers() {
 		i++
 	}
 }
+
+func getURL(ip, port string) string {
+	var url string
+	if os.Getenv("NETWORK") == "LOCAL" {
+		url = "http://" + ip + ":" + port
+	} else if os.Getenv("NETWORK") == "Z" {
+		url = "https://" + ip + ":" + port
+	}
+	return url
+}
+
 func RegisterCustomUsers() {
 	fmt.Println("\nCalling RegisterCustomUsers ")
 
@@ -78,32 +90,55 @@ func RegisterCustomUsers() {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
-			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+
+			url := getURL(Peers[i].PeerDetails["ip"], Peers[i].PeerDetails["port"])
 			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
 			fmt.Println(msgStr)
 			register(url, user, secret)
 			if i == len(Peers)-1 {
-				//if
-				user = "dashboarduser_type0_efeeb83216"
-				secret = "12211933b3"
-				//TODO: Remove the hardcoding
-				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
-				fmt.Println(msgStr)
-				register(url, user, secret)
-				user = "dashboarduser_type0_fa08214e3b"
-				secret = "460c3190dc"
-				//TODO: Remove the hardcoding
-				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
-				fmt.Println(msgStr)
-				register(url, user, secret)
-				user = "dashboarduser_type0_e00e125cf9"
-				secret = "fe1a324f86"
-				//TODO: Remove the hardcoding
-				msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
-				fmt.Println(msgStr)
-				register(url, user, secret)
-				user = "dashboarduser_type0_e0ee60d5af"
-				secret = "bc6911cfd0"
+				if os.Getenv("NETWORK") == "LOCAL" {
+					user = "test_user4"
+					secret = "4nXSrfoYGFCP"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "test_user5"
+					secret = "yg5DVhm0er1z"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "test_user6"
+					secret = "b7pmSxzKNFiw"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "test_user7"
+					secret = "YsWZD4qQmYxo"
+				} else if os.Getenv("NETWORK") == "Z" {
+					user = "dashboarduser_type0_efeeb83216"
+					secret = "12211933b3"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "dashboarduser_type0_fa08214e3b"
+					secret = "460c3190dc"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "dashboarduser_type0_e00e125cf9"
+					secret = "fe1a324f86"
+					//TODO: Remove the hardcoding
+					msgStr = fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
+					fmt.Println(msgStr)
+					register(url, user, secret)
+					user = "dashboarduser_type0_e0ee60d5af"
+					secret = "bc6911cfd0"
+				}
 			}
 		}
 		fmt.Println("Done Registering ", len(userList), "users on ", Peers[i].PeerDetails["name"])
@@ -119,7 +154,7 @@ func RegisterUsers2() {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
-			url := "https://" + Peers[i].PeerDetails["ip"] + ":" + Peers[i].PeerDetails["port"]
+			url := getURL(Peers[i].PeerDetails["ip"], Peers[i].PeerDetails["port"])
 			msgStr := fmt.Sprintf("\nRegistering %s with password %s on %s using %s", user, secret, Peers[i].PeerDetails["name"], url)
 			fmt.Println(msgStr)
 			register(url, user, secret)
@@ -179,7 +214,7 @@ func Deploy(args []string, depargs []string) error {
 		//fmt.Println("Value in State : ", peer.State)
 		//fmt.Println("Value in State : ", peer.PeerDetails["state"])
 		//aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"]
-		url := "https://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
+		url := getURL(peer.PeerDetails["ip"], peer.PeerDetails["port"])
 		txId := changeState(url, ChainCodeDetails["path"], restCallName, dargs, auser, funcName)
 		//storing the value of most recently deployed chaincode inside chaincode details if no tagname or versioning
 		ChainCodeDetails["dep_txid"] = txId
@@ -236,7 +271,7 @@ func Invoke(args []string, invokeargs []string) (id string, err error) {
 	aPeer, _ := peernetwork.APeer(ThisNetwork)
 	//fmt.Println(aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"])
 	ip, port, auser := peernetwork.AUserFromAPeer(*aPeer)
-	url := "https://" + ip + ":" + port
+	url := getURL(ip, port)
 	//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, invargs, url, auser)
 	//fmt.Println(msgStr0)
 	var txId string
@@ -302,7 +337,7 @@ func InvokeOnPeer(args []string, invokeargs []string) (id string, err error) {
 		fmt.Println("Inside invoke3: ", err2)
 		return "", err2
 	} else {
-		url := "https://" + ip + ":" + port
+		url := getURL(ip, port)
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, invargs, url, auser, host)
 		//fmt.Println(msgStr0)
 		if len(tagName) > 0 {
@@ -363,7 +398,7 @@ func InvokeAsUser(args []string, invokeargs []string) (id string, err error) {
 		fmt.Println("Inside InvokeAsUser: ", err2)
 		return "", err2
 	} else {
-		url := "https://" + ip + ":" + port
+		url := getURL(ip, port)
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, invargs, url, auser)
 		//fmt.Println(msgStr0)
 		var txId string
@@ -423,7 +458,7 @@ func Query(args []string, queryArgs []string) (id string, err error) {
 	peer, auser := peernetwork.AUserFromNetwork(ThisNetwork)
 	//fmt.Println("Value in State : ", peer.State)
 	//aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"]
-	url := "https://" + peer.PeerDetails["ip"] + ":" + peer.PeerDetails["port"]
+	url := getURL(peer.PeerDetails["ip"], peer.PeerDetails["port"])
 
 	var txId string
 	msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s\n", funcName, ccName, queryArgs, url, auser)
@@ -489,7 +524,7 @@ func QueryOnHost(args []string, queryargs []string) (id string, err error) {
 		fmt.Println("Inside Query: ", err2)
 		return "", err2
 	} else {
-		url := "https://" + ip + ":" + port
+		url := getURL(ip, port)
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, qryargs, url, auser, host)
 		//fmt.Println(msgStr0)
 		if len(tagName) > 0 {
@@ -510,7 +545,7 @@ func GetChainHeight(host string) (ht int, err error) {
 		fmt.Println("Inside GetChainHeight: ", err2)
 		return -1, err2
 	} else {
-		url := "https://" + ip + ":" + port
+		url := getURL(ip, port)
 		ht := Monitor_ChainHeight(url)
 		return ht, errors.New("")
 	}

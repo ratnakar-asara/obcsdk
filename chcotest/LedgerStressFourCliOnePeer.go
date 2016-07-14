@@ -10,7 +10,16 @@ import (
 	"obcsdk/chaincode"
 	"obcsdk/peernetwork"
 )
-
+/********** Test Objective : Ledger Stress with 4 Clients, 1 Peer ************
+*
+*   Setup: 4 node peer network with security enabled
+*   1. Deploy chaincode https://goo.gl/TysS79
+*   2. Invoke 5K txns from each client simultaneously on a single peer
+*   3. Check if the counter value(20000) matches with query on "counter"
+*
+* USAGE: NETWORK="LOCAL" go run LedgerStressOneCliOnePeer.go Utils.go
+*  This NETWORK env value could be LOCAL or Z
+*********************************************************************/
 var peerNetworkSetup peernetwork.PeerNetwork
 var AVal, BVal, curAVal, curBVal, invokeValue int64
 var argA = []string{"a"}
@@ -55,25 +64,29 @@ func Init() {
 func InvokeMultiThreads() {
 	go func() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-			invokeChaincode("dashboarduser_type0_efeeb83216")
+			//invokeChaincode("dashboarduser_type0_efeeb83216")
+			invokeChaincode(getUser(0))
 		}
 		wg.Done()
 	}()
 	go func() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-			invokeChaincode("dashboarduser_type0_fa08214e3b")
+			//invokeChaincode("dashboarduser_type0_fa08214e3b")
+			invokeChaincode(getUser(1))
 		}
 		wg.Done()
 	}()
 	go func() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-			invokeChaincode("dashboarduser_type0_e00e125cf9")
+			//invokeChaincode("dashboarduser_type0_e00e125cf9")
+			invokeChaincode(getUser(2))
 		}
 		wg.Done()
 	}()
 	go func() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
-			invokeChaincode("dashboarduser_type0_e0ee60d5af")
+			//invokeChaincode("dashboarduser_type0_e0ee60d5af")
+			invokeChaincode(getUser(3))
 		}
 		wg.Done()
 	}()
