@@ -18,9 +18,9 @@ var argB = []string{"counter"}
 var counter int64
 var wg sync.WaitGroup
 
-const(
+const (
 	TRX_COUNT = 20000
-	CLIENTS = 2
+	CLIENTS   = 2
 )
 
 func initNetwork() {
@@ -32,12 +32,12 @@ func initNetwork() {
 	chaincode.RegisterCustomUsers()
 }
 
-func invokeChaincode(user string ) {
+func invokeChaincode(user string) {
 	counter++
 	arg1Construct := []string{CHAINCODE_NAME, "invoke", user}
 	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), DATA, "counter"}
 
-	_,_ = chaincode.InvokeAsUser(arg1Construct, arg2Construct)
+	_, _ = chaincode.InvokeAsUser(arg1Construct, arg2Construct)
 }
 
 func Init() {
@@ -87,17 +87,17 @@ func tearDown() {
 	fmt.Println("....... State transfer is happening, Lets take a nap for 2 mins ......")
 	sleep(120)
 	val1, val2 := queryChaincode(counter)
-  fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
+	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n", counter, val1, val2)
 
-	newVal,err := strconv.ParseInt(val2, 10, 64);
-	if  err != nil {
-			fmt.Println("Failed to convert ",val2," to int64\n Error: ", err)
+	newVal, err := strconv.ParseInt(val2, 10, 64)
+	if err != nil {
+		fmt.Println("Failed to convert ", val2, " to int64\n Error: ", err)
 	}
 
 	//TODO: Block size again depends on the Block configuration in pbft config file
 	//Test passes when 2 * block height match with total transactions, else fails
-	if (newVal == counter) {
-		fmt.Println("\n######### Inserted ",TRX_COUNT, " records #########\n")
+	if newVal == counter {
+		fmt.Println("\n######### Inserted ", TRX_COUNT, " records #########\n")
 		fmt.Println("######### TEST PASSED #########")
 	} else {
 		fmt.Println("######### TEST FAILED #########")
@@ -107,9 +107,9 @@ func tearDown() {
 //Execution starts here ...
 func main() {
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
-	if len(os.Args) <  1{
+	if len(os.Args) < 1 {
 		fmt.Println("Usage: go run LedgerStressTwoCliOnePeer.go Utils.go")
-		return;
+		return
 	}
 	//TODO: Have a regular expression to check if the give argument is correct format
 	/*if !strings.Contains(os.Args[1], "http://") {
@@ -126,5 +126,5 @@ func main() {
 	InvokeMultiThreads()
 	wg.Wait()
 	fmt.Println("========= Transacations execution ended  =========")
-	tearDown(); //url
+	tearDown() //url
 }

@@ -43,14 +43,13 @@ func PrintNetworkDetails() {
 
 }
 
-
 /*
  Get Number of Peers on network
 */
 
-func GetNumberOfPeers(thisNetwork PeerNetwork) int{
+func GetNumberOfPeers(thisNetwork PeerNetwork) int {
 	Peers := thisNetwork.Peers
-        return len(Peers)
+	return len(Peers)
 }
 
 /*
@@ -179,17 +178,17 @@ func AUserFromThisPeer(thisNetwork PeerNetwork, host string) (ip string, port st
 
 	//get a random peer that has at a minimum one userData and one peerDetails
 	for peerIter := range Peers {
-		if Peers[peerIter].State == RUNNING || Peers[peerIter].State == STARTED || Peers[peerIter].State == UNPAUSED  {
+		if Peers[peerIter].State == RUNNING || Peers[peerIter].State == STARTED || Peers[peerIter].State == UNPAUSED {
 			if strings.Contains(host, ":") {
 				if strings.Contains(Peers[peerIter].PeerDetails["ip"], host) {
 					aPeer = &Peers[peerIter]
-          break
+					break
 				}
 			} else { //host: "vp1"
 				if strings.Contains(Peers[peerIter].PeerDetails["name"], host) {
 					//fmt.Println("Inside name IP resolution")
 					aPeer = &Peers[peerIter]
-          break
+					break
 				}
 			}
 		}
@@ -225,17 +224,17 @@ func PeerOfThisUser(thisNetwork PeerNetwork, username string) (ip string, port s
 	//fmt.Println("Inside function")
 	//get a random peer that has at a minimum one userData and one peerDetails
 	for peerIter := range Peers {
-		if len(Peers[peerIter].UserData) > 0 && len(Peers[peerIter].PeerDetails) > 0 && (Peers[peerIter].State == RUNNING ||  Peers[peerIter].State == STARTED){
-				if _, ok := Peers[peerIter].UserData[username]; ok {
-					//fmt.Printf("Found %s in network", username)
-					aPeer = &Peers[peerIter]
-				}
+		if len(Peers[peerIter].UserData) > 0 && len(Peers[peerIter].PeerDetails) > 0 && (Peers[peerIter].State == RUNNING || Peers[peerIter].State == STARTED) {
+			if _, ok := Peers[peerIter].UserData[username]; ok {
+				//fmt.Printf("Found %s in network", username)
+				aPeer = &Peers[peerIter]
+			}
 		}
 	}
 	if aPeer == nil {
 		//TODO: Change these details on Z aswell, need a permanent solution
 		//if (username == "test_user4" || username == "test_user5" || username == "test_user6" || username == "test_user7") {
-		if (username == "dashboarduser_type0_efeeb83216" || username == "dashboarduser_type0_fa08214e3b" || username == "dashboarduser_type0_e00e125cf9" || username == "dashboarduser_type0_e0ee60d5af"){
+		if username == "dashboarduser_type0_efeeb83216" || username == "dashboarduser_type0_fa08214e3b" || username == "dashboarduser_type0_e00e125cf9" || username == "dashboarduser_type0_e0ee60d5af" {
 			aPeer = &Peers[3]
 			return aPeer.PeerDetails["ip"], aPeer.PeerDetails["port"], username, err1
 		}
@@ -389,7 +388,7 @@ func StopPeersLocal(thisNetwork PeerNetwork, peers []string) {
 
 func StartPeersLocal(thisNetwork PeerNetwork, peers []string) {
 
-	for i := 0;i < len(peers);i++ {
+	for i := 0; i < len(peers); i++ {
 		cmd := "docker start " + peers[i]
 		out, err := exec.Command("/bin/sh", "-c", cmd).Output()
 		if err != nil {
@@ -437,7 +436,7 @@ func GetFullPeerName(thisNetwork PeerNetwork, shortname string) (name string, er
 		if (len(Peers[peerIter].UserData) > 0) && (len(Peers[peerIter].PeerDetails) > 0) {
 			if strings.Contains(Peers[peerIter].PeerDetails["name"], shortname) {
 				aPeer = &Peers[peerIter]
-        break
+				break
 			}
 		}
 	}

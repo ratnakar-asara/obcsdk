@@ -87,7 +87,7 @@ func unmarshalNetworkCredentials(reader io.Reader) (networkCredentials, error) {
 	var NC networkCredentials
 	err := decoder.Decode(&NC)
 	if err != nil {
-		fmt.Println("Decoding error \t Error:",err)
+		fmt.Println("Decoding error \t Error:", err)
 	}
 	return NC, err
 }

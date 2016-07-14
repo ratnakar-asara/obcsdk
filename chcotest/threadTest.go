@@ -18,11 +18,13 @@ var data string
 var counter int64
 
 var url string
-const(
+
+const (
 	THREAD_COUNT = 4
-	TOTAL_NODES = 4
-	TRX_COUNT = 20000
+	TOTAL_NODES  = 4
+	TRX_COUNT    = 20000
 )
+
 func initNetwork() {
 	fmt.Println("========= Init Network =========")
 	peernetwork.GetNC_Local()
@@ -50,12 +52,12 @@ func deployChaincode(done chan bool) {
 
 func invokeChaincodeOnPeer(peerName string) {
 	counter++
-	fmt.Println("Iteration# ["+ strconv.FormatInt(counter, 10)+"] On "+peerName)
+	fmt.Println("Iteration# [" + strconv.FormatInt(counter, 10) + "] On " + peerName)
 
 	arg1Construct := []string{"mycc", "invoke", peerName}
 	arg2Construct := []string{"a" + strconv.FormatInt(counter, 10), data, "b"}
 
-	_,_ = chaincode.InvokeOnPeer(arg1Construct, arg2Construct) //invRes
+	_, _ = chaincode.InvokeOnPeer(arg1Construct, arg2Construct) //invRes
 }
 
 func queryChaincode() (res1, res2 string) { //int64) {
@@ -91,12 +93,13 @@ func InvokeMultiThreads() {
 		go func(val int) {
 			for j := 1; j <= TRX_COUNT/THREAD_COUNT; j++ {
 				fmt.Printf("\n============== CLIENT%d ==============\n", (THREAD_COUNT % val))
-				invokeChaincodeOnPeer("PEER"+strconv.Itoa((THREAD_COUNT % val)+1))
+				invokeChaincodeOnPeer("PEER" + strconv.Itoa((THREAD_COUNT%val)+1))
 			}
 			wg.Done()
 		}(i)
 	}
 }
+
 //Invokes loop
 func InvokeThreads() {
 
@@ -131,12 +134,12 @@ func InvokeThreads() {
 		wg.Done()
 	}()
 }
-func displayChainHeight(){
+func displayChainHeight() {
 	startValue := 3
 	height := 0
 	var urlStr string
-	for i:=0;i<TOTAL_NODES;i++ {
-		urlStr = "http://172.17.0."+strconv.Itoa(startValue+i)+":5000"
+	for i := 0; i < TOTAL_NODES; i++ {
+		urlStr = "http://172.17.0." + strconv.Itoa(startValue+i) + ":5000"
 		height = chaincode.Monitor_ChainHeight(urlStr)
 		fmt.Println("################ Chaincode Height on "+urlStr+" is : ", height)
 	}
@@ -147,14 +150,14 @@ func timeTrack(start time.Time, name string) {
 	//sleep(10)
 
 	val1, val2 := queryChaincode()
-	var exitCounter = 0;
+	var exitCounter = 0
 	for val2 != strconv.FormatInt(counter, 10) && exitCounter < 3 {
 		fmt.Printf("\n########### Peers are not in sync ? Check again after 5 sec")
 		sleep(10)
 		_, val2 = queryChaincode()
-		exitCounter ++;
+		exitCounter++
 	}
-  displayChainHeight()
+	displayChainHeight()
 
 	fmt.Printf("\n########### After Query Vals\n A = %s \nCounter = %s", val1, val2)
 	fmt.Printf("\n\n################# %s took %s \n\n", name, elapsed)

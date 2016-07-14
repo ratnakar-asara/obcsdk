@@ -1,14 +1,14 @@
 package main
+
 /******************** Testing Objective: Consensu Sync Test ********
 *   Setup: 5 node local docker peer network with security
 *   0. Deploy chaincode example02 with 100, 200 as initial args
-*   1. PAUSE ONE PEER1 
+*   1. PAUSE ONE PEER1
 *   2. Send ONE INVOKE REQUEST
 *   3. Unpause Paused PEER1
 *   4. Do A Query ON same PEER0 and PEER1 as in step3
-*   5. Verify query results match on PEER0 and PEER1 after invoke 
+*   5. Verify query results match on PEER0 and PEER1 after invoke
 *********************************************************************/
-
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ var argA = []string{"a"}
 var argB = []string{"b"}
 
 func setupNetwork() {
-	
+
 	fmt.Println("Creating a local docker network")
 
 	peernetwork.PrintNetworkDetails()
@@ -47,14 +47,14 @@ func sleep(secs int64) {
 	time.Sleep(time.Second * time.Duration(secs))
 }
 
-func deployChaincode () {
+func deployChaincode() {
 	var AVal, BVal int64
 	AVal = 100
 	BVal = 900
 	example := "example02"
 	var funcArgs = []string{example, "init"}
-	var args = []string{argA[0], strconv.FormatInt(AVal,10), argB[0], strconv.FormatInt(BVal,10)}
-	
+	var args = []string{argA[0], strconv.FormatInt(AVal, 10), argB[0], strconv.FormatInt(BVal, 10)}
+
 	fmt.Println("\n######## Deploying chaincode ")
 	chaincode.Deploy(funcArgs, args)
 
@@ -63,7 +63,7 @@ func deployChaincode () {
 	sleep(120)
 }
 
-func invokeChaincode () (res1, res2 int) {
+func invokeChaincode() (res1, res2 int) {
 	fmt.Println("\n######## Invoke on chaincode ")
 	arg1Construct := []string{"example02", "invoke"}
 	arg2Construct := []string{"a", "b", strconv.Itoa(invokeValue)}
@@ -78,28 +78,27 @@ func invokeChaincode () (res1, res2 int) {
 	return curAVal, curBVal
 }
 
-func queryChaincode () (res1, res2 int) {
+func queryChaincode() (res1, res2 int) {
 	fmt.Println("\n######## Query on chaincode ")
 	qAPIArgs0 := []string{"example02", "query"}
 	var A, B string
 
 	A, _ = chaincode.Query(qAPIArgs0, argA)
 	B, _ = chaincode.Query(qAPIArgs0, argB)
-	fmt.Println(fmt.Sprintf("\nA = %s B= %s", A,B))
+	fmt.Println(fmt.Sprintf("\nA = %s B= %s", A, B))
 	val1, _ := strconv.Atoi(A)
 	val2, _ := strconv.Atoi(B)
-	return val1,val2
+	return val1, val2
 }
 
-
-func pausePeer(){
+func pausePeer() {
 	fmt.Println("####### Pause PEER1")
 	peersToPause := []string{"PEER1"}
 	peernetwork.PausePeersLocal(peerNetworkSetup, peersToPause)
 	sleep(60)
 }
 
-func unpausePeer(){
+func unpausePeer() {
 	fmt.Println("####### Unpause PEER1")
 	peernetwork.UnpausePeerLocal(peerNetworkSetup, "PEER1")
 	fmt.Println("Sleeping for 2 minutes for PEER1 to sync up - state transfer")
@@ -147,22 +146,20 @@ func chaincodeQueryOnHost() {
 
 func main() {
 	// Setup the network based on the Network credentials
-	setupNetwork();
+	setupNetwork()
 
-	deployChaincode();
-	invokeChaincode();
-	queryChaincode();
-	
+	deployChaincode()
+	invokeChaincode()
+	queryChaincode()
+
 	//TODO: Pass which PEER to be paused
 	pausePeer()
-	
+
 	//TODO: Add loop if required
-	invokeChaincode();
-	
+	invokeChaincode()
+
 	unpausePeer()
-	//TODO : Change this as required 
+	//TODO : Change this as required
 	chaincodeQueryOnHost()
 
-	
 }
-

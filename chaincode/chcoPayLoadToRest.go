@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"obcsdk/peerrest"
 	"strconv"
 	"strings"
-	"obcsdk/peerrest"
 )
 
 // These structures describe the response to a  POST /chaincode API call
@@ -42,7 +42,7 @@ func Monitor_ChainHeight(url string) int {
 		//prevHash string `json:"previousBlockHash"`
 	}
 	resCh := new(ChainMsg)
-	fmt.Println( url+"/chain Response: ", respBody)
+	fmt.Println(url+"/chain Response: ", respBody)
 	err := json.Unmarshal([]byte(respBody), &resCh)
 	if err != nil {
 		fmt.Println("There was an error in unmarshalling chain info")
@@ -60,40 +60,41 @@ func Chain_Stats(url string) {
 	peerrest.GetChainInfo(url + "/chain")
 
 }
+
 type Timestamps struct {
 	Seconds int `json:"seconds"`
-	Nanos int `json:"nanos"`
+	Nanos   int `json:"nanos"`
 }
 type Transactions struct {
-	Type int  `json:"type,omitempty"`
-	ChaincodeID string  `json:"chaincodeID"`
-	Payload string  `json:"payload"`
-	Uuid string  `json:"uuid"`
-	Timestamp Timestamps  `json:"timestamp"`
-	ConfidentialityLevel int `json:"confidentialityLevel"`
-	ConfidentialityProtocolVersion string `json:"confidentialityProtocolVersion"`
-	nonce string `json:"nonce"`
-	toValidators string `json:"toValidators"`
-	cert string `json:"cert"`
-	signature string `json:"signature"`
+	Type                           int        `json:"type,omitempty"`
+	ChaincodeID                    string     `json:"chaincodeID"`
+	Payload                        string     `json:"payload"`
+	Uuid                           string     `json:"uuid"`
+	Timestamp                      Timestamps `json:"timestamp"`
+	ConfidentialityLevel           int        `json:"confidentialityLevel"`
+	ConfidentialityProtocolVersion string     `json:"confidentialityProtocolVersion"`
+	nonce                          string     `json:"nonce"`
+	toValidators                   string     `json:"toValidators"`
+	cert                           string     `json:"cert"`
+	signature                      string     `json:"signature"`
 }
 type TransactionResults struct {
-	Uuid string `json:"uuid,omitempty"`
-	Result byte `json:"result,omitempty"`
-	ErrorCode int `json:"errorCode,omitempty"`
-	Error string `json:"error,omitempty"`
+	Uuid      string `json:"uuid,omitempty"`
+	Result    byte   `json:"result,omitempty"`
+	ErrorCode int    `json:"errorCode,omitempty"`
+	Error     string `json:"error,omitempty"`
 	//chaincodevent ChaincodeEvent `json:"chaincodeEvent,omitempty"`
 }
 type NonHashData struct {
-		LocalLedgerCommitTimestamp Timestamps  `json:"localLedgerCommitTimestamp"`
-		TransactionResult []TransactionResults  `json:"transactionResults"`
+	LocalLedgerCommitTimestamp Timestamps           `json:"localLedgerCommitTimestamp"`
+	TransactionResult          []TransactionResults `json:"transactionResults"`
 }
 type Block struct {
-	TransactionList []Transactions `json:"transactions"`
-	StateHash  string `json:"stateHash"`
-	PreviousBlockHash string `json:"previousBlockHash"`
-	ConsensusMetadata string `json:"consensusMetadata"`
-	NonHash NonHashData `json:"nonHashData"`
+	TransactionList   []Transactions `json:"transactions"`
+	StateHash         string         `json:"stateHash"`
+	PreviousBlockHash string         `json:"previousBlockHash"`
+	ConsensusMetadata string         `json:"consensusMetadata"`
+	NonHash           NonHashData    `json:"nonHashData"`
 }
 
 func ChaincodeBlockHash(url string, block int) string {
@@ -112,10 +113,10 @@ func ChaincodeBlockTrxInfo(url string, block int) NonHashData {
 	//respBody, status := peerrest.GetChainInfo(url + "/chain/blocks/" + strconv.Itoa(block))
 	respBody, _ := peerrest.GetChainInfo(url + "/chain/blocks/" + strconv.Itoa(block))
 	blockStruct := new(Block)
-  err := json.Unmarshal([]byte(respBody), &blockStruct)
-  if err!= nil {
-  	fmt.Println(err)
-  }
+	err := json.Unmarshal([]byte(respBody), &blockStruct)
+	if err != nil {
+		fmt.Println(err)
+	}
 	//fmt.Println(blockStruct.NonHash)
 	return blockStruct.NonHash
 }
@@ -277,7 +278,7 @@ func changeState_chaincode(url string, path string, restCallName string,
 
 	//  issue REST call
 	respBody, _ := peerrest.PostChainAPI(restUrl, depPayLoad)
-        //commented for less output messages
+	//commented for less output messages
 	//fmt.Println("Response from Rest Call: >> \n")
 	//printJSON(respBody)
 
@@ -356,7 +357,7 @@ func readState_devops(url string, path string, restCallName string, args []strin
 } /* readState_devops() */
 
 func readState_chaincode(url string, path string, restCallName string, args []string, user string, funcName string) string {
-	fmt.Printf("readState_chaincode: entered path=%s, user=%s, args=%v",path, user, args)
+	fmt.Printf("readState_chaincode: entered path=%s, user=%s, args=%v", path, user, args)
 	depPL := make(chan []byte)
 	go genPayLoadForChaincode(depPL, path, funcName, args, user, restCallName)
 	depPayLoad := <-depPL

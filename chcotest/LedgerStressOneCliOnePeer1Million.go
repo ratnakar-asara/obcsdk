@@ -10,6 +10,7 @@ import (
 	"obcsdk/chaincode"
 	"obcsdk/peernetwork"
 )
+
 /********** Test Objective : Ledger Stress with 1 Peer and 1 Client ************
 *
 *   Setup: 4 node peer network with security enabled
@@ -45,7 +46,7 @@ func initNetwork() {
 
 // Utility function to invoke on chaincode available @ http://urlmin.com/4r76d
 func invokeChaincode() {
-	counter ++
+	counter++
 	arg1 := []string{CHAINCODE_NAME, INVOKE}
 	arg2 := []string{"a" + strconv.FormatInt(counter, 10), DATA, "counter"}
 	_, _ = chaincode.Invoke(arg1, arg2)
@@ -75,18 +76,18 @@ func tearDown() {
 	sleep(60)
 	fmt.Println("========= Counter is", counter)
 	val1, val2 := queryChaincode(counter)
-	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n",counter, val1, val2)
+	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n", counter, val1, val2)
 
-	newVal,err := strconv.ParseInt(val2, 10, 64);
+	newVal, err := strconv.ParseInt(val2, 10, 64)
 
-	if  err != nil {
-			fmt.Println("Failed to convert ",val2," to int64\n Error: ", err)
+	if err != nil {
+		fmt.Println("Failed to convert ", val2, " to int64\n Error: ", err)
 	}
 
 	//TODO: Block size again depends on the Block configuration in pbft config file
 	//Test passes when 2 * block height match with total transactions, else fails
-	if (newVal == counter) {
-		fmt.Println("\n######### Inserted ",TRX_COUNT, " records #########\n")
+	if newVal == counter {
+		fmt.Println("\n######### Inserted ", TRX_COUNT, " records #########\n")
 		fmt.Println("######### TEST PASSED #########")
 	} else {
 		fmt.Println("######### TEST FAILED #########")
@@ -96,9 +97,9 @@ func tearDown() {
 //Execution starts from here ...
 func main() {
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
-	if len(os.Args) <  1{
+	if len(os.Args) < 1 {
 		fmt.Println("Usage: go run LedgerStressOneCliOnePeer.go Utils.go")
-		return;
+		return
 	}
 	//TODO: Have a regular expression to check if the give argument is correct format
 	/*if !strings.Contains(os.Args[1], "http://") {

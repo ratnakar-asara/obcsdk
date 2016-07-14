@@ -6,9 +6,8 @@ import (
 	"io"
 	"log"
 	"os"
-    "os/exec"
+	"os/exec"
 	"strconv"
-
 	//"strings"
 	//"github.com/pkg/sftp"
 	//"golang.org/x/crypto/ssh"
@@ -53,48 +52,48 @@ const IP = "9.37.136.147"
 
 //NEW_IP = "9.42.91.158"
 
-func SetupLocalNetwork(numPeers int, sec bool){
+func SetupLocalNetwork(numPeers int, sec bool) {
 
-    var cmd *exec.Cmd
-    goroot := os.Getenv("GOROOT")
-    pwd, _ := os.Getwd()
-    fmt.Println("Initially ", pwd)
-    os.Chdir(pwd + "/../automation/")
-    pwd, _ = os.Getwd()
-    fmt.Println("After change dir ", pwd)
-    script := pwd + "/local_fabric.sh"
-    arg0 :=  "-n"
-    arg1 := strconv.Itoa(numPeers)
-    arg2 := "-s"
+	var cmd *exec.Cmd
+	goroot := os.Getenv("GOROOT")
+	pwd, _ := os.Getwd()
+	fmt.Println("Initially ", pwd)
+	os.Chdir(pwd + "/../automation/")
+	pwd, _ = os.Getwd()
+	fmt.Println("After change dir ", pwd)
+	script := pwd + "/local_fabric.sh"
+	arg0 := "-n"
+	arg1 := strconv.Itoa(numPeers)
+	arg2 := "-s"
 
-    //cmdStr := script + arg0 + arg1 + arg2
-    cmdStr := script + arg0 + arg1
-    fmt.Println("cmd ", cmdStr)
-    //cmd := exec.Command("/bin/bash", cmdStr)
-    //cmd := exec.Command("sudo", script, arg0, arg1, arg2)
-    cmd = exec.Command("sudo", script, arg0, arg1, arg2, "")
+	//cmdStr := script + arg0 + arg1 + arg2
+	cmdStr := script + arg0 + arg1
+	fmt.Println("cmd ", cmdStr)
+	//cmd := exec.Command("/bin/bash", cmdStr)
+	//cmd := exec.Command("sudo", script, arg0, arg1, arg2)
+	cmd = exec.Command("sudo", script, arg0, arg1, arg2, "")
 
-    var stdoutBuf bytes.Buffer
-    cmd.Stdout = &stdoutBuf
-     err := cmd.Run()
-     if err != nil {
-        log.Fatal(err)
-     }
-    fmt.Printf("in all caps: \n", stdoutBuf.String())
+	var stdoutBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("in all caps: \n", stdoutBuf.String())
 
-    GetNC_Local()
-    os.Chdir(goroot + "/src/obcsdk/chcotest")
-    pwd, _ = os.Getwd()
-    fmt.Println("After change back dir ", pwd)
+	GetNC_Local()
+	os.Chdir(goroot + "/src/obcsdk/chcotest")
+	pwd, _ = os.Getwd()
+	fmt.Println("After change back dir ", pwd)
 }
 
 func GetNC_Local() {
-        //goroot := os.Getenv("GOROOT")
-        //pwd, _ := os.Getwd()
-        //fileName := pwd + "/networkcredentials"
-        fileName := "../automation/networkcredentials"
+	//goroot := os.Getenv("GOROOT")
+	//pwd, _ := os.Getwd()
+	//fileName := pwd + "/networkcredentials"
+	fileName := "../automation/networkcredentials"
 
-        inputfile, err := os.Open(fileName)
+	inputfile, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -132,7 +131,7 @@ func LoadNetwork() PeerNetwork {
 */
 func InitializeChainCodes() LibChainCodes {
 	pwd, _ := os.Getwd()
-	file, err := os.Open(pwd+"/../util/CC_Collection.json")
+	file, err := os.Open(pwd + "/../util/CC_Collection.json")
 	if err != nil {
 		log.Fatal("Error in opening CC_Collection.json file ")
 	}
@@ -179,7 +178,7 @@ func initializePeers() (peers []Peer, name string) {
 	remainder := numOfUsersOnNetwork % numOfPeersOnNetwork
 	k := 0
 	//for each peerDetail we construct a new peer evenly distributing the list of users
-	for i :=0; i < numOfPeersOnNetwork; i++{
+	for i := 0; i < numOfPeersOnNetwork; i++ {
 
 		aPeerDetail := make(map[string]string)
 		aPeerDetail["ip"] = peerDetails[i].IP
@@ -199,7 +198,7 @@ func initializePeers() (peers []Peer, name string) {
 	if remainder > 0 {
 		for m := 0; m < remainder; m++ {
 			allPeers[m].UserData[userDetails[k].USER] = userDetails[k].SECRET
-			k++;
+			k++
 		}
 	}
 
@@ -209,8 +208,8 @@ func initializePeers() (peers []Peer, name string) {
 func initNetworkCredentials() ([]peerHTTP, []userData, string) {
 
 	pwd, _ := os.Getwd()
-        fmt.Println("CWD Inside initNetworkCredentials:", pwd)
-	file, err := os.Open(pwd+"/../util/NetworkCredentials.json")
+	fmt.Println("CWD Inside initNetworkCredentials:", pwd)
+	file, err := os.Open(pwd + "/../util/NetworkCredentials.json")
 
 	if err != nil {
 		fmt.Println("Error in opening NetworkCredentials file ", err)

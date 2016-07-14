@@ -2,11 +2,11 @@ package peerrest
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"crypto/tls"
 )
 
 /*
@@ -18,26 +18,25 @@ import (
 func GetChainInfo(url string) (respBody string, respStatus string) {
 	//TODO : define a logger
 
-        tr := &http.Transport{
-	         TLSClientConfig:    &tls.Config{RootCAs: nil},
-	         DisableCompression: true,
-        }
-        client := &http.Client{Transport: tr}
-        response, err := client.Get(url)
+	tr := &http.Transport{
+		TLSClientConfig:    &tls.Config{RootCAs: nil},
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
+	response, err := client.Get(url)
 	if err != nil {
-			fmt.Printf("%s", err)
-			return err.Error(), "Error from GET request"
+		fmt.Printf("%s", err)
+		return err.Error(), "Error from GET request"
 	} else {
 		defer response.Body.Close()
 		contents, err := ioutil.ReadAll(response.Body)
-	        if err != nil {
+		if err != nil {
 			fmt.Printf("%s", err)
 			return err.Error(), "Error from GET request"
 		}
 		return string(contents), response.Status
 	}
 }
-
 
 /*
   Issue POST request to BlockChain resource.
@@ -49,11 +48,11 @@ func GetChainInfo(url string) (respBody string, respStatus string) {
 func PostChainAPI(url string, payLoad []byte) (respBody string, respStatus string) {
 
 	//fmt.Println(">>>>> From secure postchain >>> ", url)
-        tr := &http.Transport{
-	         TLSClientConfig:    &tls.Config{RootCAs: nil},
-	         DisableCompression: true,
-        }
-        client := &http.Client{Transport: tr}
+	tr := &http.Transport{
+		TLSClientConfig:    &tls.Config{RootCAs: nil},
+		DisableCompression: true,
+	}
+	client := &http.Client{Transport: tr}
 	response, err := client.Post(url, "json", bytes.NewBuffer(payLoad))
 
 	var errCount int

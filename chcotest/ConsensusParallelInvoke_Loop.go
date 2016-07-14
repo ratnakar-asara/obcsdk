@@ -1,11 +1,11 @@
 package main
+
 /******************** Testing Objective consensu:STATE TRANSFER ********
 *   Setup: 4 node local docker peer network with security
 *   0. Deploy chaincodeexample02 with 100000, 90000 as initial args
 *   1. Send Invoke Requests on multiple peers using go routines.
 *   2. Verify query results match on PEER0 and PEER1 after invoke
 *********************************************************************/
-
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func main() {
 	fmt.Println("Creating a local docker network")
 	peernetwork.SetupLocalNetwork(8, true)
 
-  numPeers := 8
+	numPeers := 8
 	time.Sleep(60000 * time.Millisecond)
 	peernetwork.PrintNetworkDetails()
 	_ = chaincode.InitNetwork()
@@ -31,14 +31,12 @@ func main() {
 	//chaincode.Init()
 	chaincode.RegisterUsers()
 
-
-        //os.Exit(1)
+	//os.Exit(1)
 	//get a URL details to get info n chainstats/transactions/blocks etc.
 	aPeer, _ := peernetwork.APeer(chaincode.ThisNetwork)
 	url := "http://" + aPeer.PeerDetails["ip"] + ":" + aPeer.PeerDetails["port"]
 
-        //barry
-
+	//barry
 
 	//does not on localhosts
 	//fmt.Println("Peers on network ")
@@ -61,24 +59,23 @@ func main() {
 	chaincode.Deploy(dAPIArgs0, depArgs0)
 	//fmt.Println("From Deploy error ", err)
 
-        //os.Exit(1)
+	//os.Exit(1)
 	//var resa, resb string
-	var inita, initb, curra, currb  int
+	var inita, initb, curra, currb int
 	inita = 100000
 	initb = 90000
 	curra = inita
 	currb = initb
 
-	time.Sleep(60000 * time.Millisecond);
+	time.Sleep(60000 * time.Millisecond)
 	fmt.Println("\nPOST/Chaincode: Querying a and b after deploy >>>>>>>>>>> ")
 	qAPIArgs0 := []string{"example02", "query"}
 	qArgsa := []string{"a"}
 	qArgsb := []string{"b"}
 	A, _ := chaincode.Query(qAPIArgs0, qArgsa)
 	B, _ := chaincode.Query(qAPIArgs0, qArgsb)
-	myStr := fmt.Sprintf("\nA = %s B= %s", A,B)
+	myStr := fmt.Sprintf("\nA = %s B= %s", A, B)
 	fmt.Println(myStr)
-
 
 	fmt.Println("******************************")
 	//fmt.Println("PAUSING PEER1 To Test Consensus")
@@ -87,12 +84,11 @@ func main() {
 	//peersToPause := []string{"PEER1"}
 	//peernetwork.PausePeersLocal(MyNetwork, peersToPause)
 
-
 	numReq := 4
 	InvokeLoop(numPeers, numReq)
 	//	}
 	curra = curra - 144
-  currb = currb + 144
+	currb = currb + 144
 	//fmt.Println("Sleeping for 2 minutes for PEER1 to sync up - state transfer")
 	fmt.Println("Sleeping for 2 minutes ")
 	time.Sleep(120000 * time.Millisecond)
@@ -140,38 +136,37 @@ func main() {
 
 }
 
-
 func InvokeLoop(numPeers int, numReq int) {
 
-  //i := numPeers
-  j := 0
+	//i := numPeers
+	j := 0
 	k := 1
 	invArgs0 := []string{"a", "b", "1"}
 	for {
-		for ( j < numPeers  ) {
+		for j < numPeers {
 			k = 1
 			fmt.Println("Value in j ", j)
 			currPeer := "PEER" + strconv.Itoa(j)
 			iAPIArgsCurrPeer := []string{"example02", "invoke", currPeer}
-			for (k <= numReq) {
-			 	go chaincode.InvokeOnPeer(iAPIArgsCurrPeer, invArgs0)
-			 	fmt.Println("Invoking ", k)
-			 	k++
-	  	}
-			m:=j-1
-			for (m >=0 ) {
-			 	loopPeer := "PEER" + strconv.Itoa(m)
-			 	fmt.Println("Value in loopPeer ", loopPeer)
-			 	iAPIArgsLoopPeer := []string{"example02", "invoke", loopPeer}
-			 	k = 1
-		   	for (k <= numReq) {
+			for k <= numReq {
+				go chaincode.InvokeOnPeer(iAPIArgsCurrPeer, invArgs0)
+				fmt.Println("Invoking ", k)
+				k++
+			}
+			m := j - 1
+			for m >= 0 {
+				loopPeer := "PEER" + strconv.Itoa(m)
+				fmt.Println("Value in loopPeer ", loopPeer)
+				iAPIArgsLoopPeer := []string{"example02", "invoke", loopPeer}
+				k = 1
+				for k <= numReq {
 					go chaincode.InvokeOnPeer(iAPIArgsLoopPeer, invArgs0)
 					fmt.Println("Invoking LoopPeer", k)
-				  k++
-		   	}
-				m = m-1
+					k++
+				}
+				m = m - 1
 			}
-			j++;
+			j++
 		}
 	}
 }

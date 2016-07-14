@@ -33,7 +33,7 @@ func InitNetwork() peernetwork.PeerNetwork {
 }
 
 /**
-   initializes chaincodes on network using information supplied in CC_Collections.json file
+  initializes chaincodes on network using information supplied in CC_Collections.json file
 */
 func InitChainCodes() {
 	LibCC = peernetwork.InitializeChainCodes()
@@ -74,7 +74,7 @@ func RegisterCustomUsers() {
 
 	Peers := ThisNetwork.Peers
 
-	for i := 0; i < len(Peers) ; i++ {
+	for i := 0; i < len(Peers); i++ {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
@@ -115,7 +115,7 @@ func RegisterUsers2() {
 
 	//testuser := peernetwork.AUser(ThisNetwork)
 	Peers := ThisNetwork.Peers
-	for i:= 0;i < len(Peers)-2;i++ {
+	for i := 0; i < len(Peers)-2; i++ {
 
 		userList := ThisNetwork.Peers[i].UserData
 		for user, secret := range userList {
@@ -127,6 +127,7 @@ func RegisterUsers2() {
 		fmt.Println("Done Registering ", len(userList), "users on ", Peers[i].PeerDetails["name"])
 	}
 }
+
 /*
    deploys a chaincode in the fabric to later execute functions on this deployed chaincode
    Takes two arguments
@@ -286,7 +287,7 @@ func InvokeOnPeer(args []string, invokeargs []string) (id string, err error) {
 		tagName = args[3]
 	}
 	invargs := invokeargs
-        restCallName := "invoke"
+	restCallName := "invoke"
 	var err1 error
 	var txId string
 	ChainCodeDetails, Versions, err1 = peernetwork.GetCCDetailByName(ccName, LibCC)
@@ -304,10 +305,10 @@ func InvokeOnPeer(args []string, invokeargs []string) (id string, err error) {
 		url := "https://" + ip + ":" + port
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, invargs, url, auser, host)
 		//fmt.Println(msgStr0)
-		if (len(tagName) > 0) {
+		if len(tagName) > 0 {
 			txId = changeState(url, Versions[tagName], restCallName, invargs, auser, funcName)
-		}else {
-		        txId = changeState(url, (ChainCodeDetails["dep_txid"]), restCallName, invargs, auser, funcName)
+		} else {
+			txId = changeState(url, (ChainCodeDetails["dep_txid"]), restCallName, invargs, auser, funcName)
 		}
 		return txId, errors.New("")
 	}
@@ -368,7 +369,7 @@ func InvokeAsUser(args []string, invokeargs []string) (id string, err error) {
 		var txId string
 		if len(tagName) > 0 {
 			txId = changeState(url, Versions[tagName], restCallName, invargs, auser, funcName)
-		}else {
+		} else {
 			txId = changeState(url, ChainCodeDetails["dep_txid"], restCallName, invargs, auser, funcName)
 		}
 		return txId, errors.New("")
@@ -437,7 +438,6 @@ func Query(args []string, queryArgs []string) (id string, err error) {
 	return txId, errors.New("")
 }
 
-
 /*
 /*
   Query fetches the value of the arguments supplied to query function from the fabric.
@@ -458,8 +458,6 @@ func Query(args []string, queryArgs []string) (id string, err error) {
 		var err error
 		queryRes,err := chaincode.Query(qAPIArgs0, qArgsa)
 */
-
-
 
 func QueryOnHost(args []string, queryargs []string) (id string, err error) {
 	if (len(args) < 3) || (len(args) > 4) {
@@ -494,9 +492,9 @@ func QueryOnHost(args []string, queryargs []string) (id string, err error) {
 		url := "https://" + ip + ":" + port
 		//msgStr0 := fmt.Sprintf("\n** Calling %s on chaincode %s with args %s on  %s as %s on %s\n", funcName, ccName, qryargs, url, auser, host)
 		//fmt.Println(msgStr0)
-		if (len(tagName) > 0) {
+		if len(tagName) > 0 {
 			txId = changeState(url, Versions[tagName], restCallName, qryargs, auser, funcName)
-		}else {
+		} else {
 			txId = changeState(url, (ChainCodeDetails["dep_txid"]), restCallName, qryargs, auser, funcName)
 		}
 		return txId, errors.New("")
@@ -506,15 +504,15 @@ func QueryOnHost(args []string, queryargs []string) (id string, err error) {
 
 func GetChainHeight(host string) (ht int, err error) {
 
-			fmt.Println("Inside GetChainHeight chcoAPI.....")
-			ip, port, _, err2 := peernetwork.AUserFromThisPeer(ThisNetwork, host)
-			if err2 != nil {
-				fmt.Println("Inside GetChainHeight: ", err2)
-				return -1, err2
-			} else {
-				url := "https://" + ip + ":" + port
-				ht := Monitor_ChainHeight(url)
-				return ht, errors.New("")
-			}
+	fmt.Println("Inside GetChainHeight chcoAPI.....")
+	ip, port, _, err2 := peernetwork.AUserFromThisPeer(ThisNetwork, host)
+	if err2 != nil {
+		fmt.Println("Inside GetChainHeight: ", err2)
+		return -1, err2
+	} else {
+		url := "https://" + ip + ":" + port
+		ht := Monitor_ChainHeight(url)
+		return ht, errors.New("")
+	}
 
 }

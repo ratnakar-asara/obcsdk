@@ -27,8 +27,7 @@ func main() {
 	aPeer, _ := peernetwork.APeer(chaincode.ThisNetwork)
 	url := "http://" + aPeer.PeerDetails["ip"] + ":" + aPeer.PeerDetails["port"]
 
-        //barry
-
+	//barry
 
 	//does not on localhosts
 	//fmt.Println("Peers on network ")
@@ -58,16 +57,15 @@ func main() {
 	curra = inita
 	currb = initb
 
-	time.Sleep(60000 * time.Millisecond);
+	time.Sleep(60000 * time.Millisecond)
 	fmt.Println("\nPOST/Chaincode: Querying a and b after deploy >>>>>>>>>>> ")
 	qAPIArgs0 := []string{"example02", "query"}
 	qArgsa := []string{"a"}
 	qArgsb := []string{"b"}
 	A, _ := chaincode.Query(qAPIArgs0, qArgsa)
 	B, _ := chaincode.Query(qAPIArgs0, qArgsb)
-	myStr := fmt.Sprintf("\nA = %s B= %s", A,B)
+	myStr := fmt.Sprintf("\nA = %s B= %s", A, B)
 	fmt.Println(myStr)
-
 
 	fmt.Println("******************************")
 	fmt.Println("PAUSING PEER1 and PEER2 .. To Test Consensus")
@@ -85,34 +83,34 @@ func main() {
 		curra = curra - 1
 		currb = currb + 1
 
-/*******************************************
-		fmt.Println("******************************")
-		fmt.Println("\nPOST/Chaincode : UNPAUSE ONE PEER >>>>>>>>>>> Transactions are queued ")
-		fmt.Println("******************************")
+		/*******************************************
+				fmt.Println("******************************")
+				fmt.Println("\nPOST/Chaincode : UNPAUSE ONE PEER >>>>>>>>>>> Transactions are queued ")
+				fmt.Println("******************************")
 
-		fmt.Println("UNPAUSING PEER1 ONLY.. To Test Consensus")
-		peernetwork.StartPeerLocal(MyNetwork, "PEER1")
-		time.Sleep(30000 * time.Millisecond)
+				fmt.Println("UNPAUSING PEER1 ONLY.. To Test Consensus")
+				peernetwork.StartPeerLocal(MyNetwork, "PEER1")
+				time.Sleep(30000 * time.Millisecond)
 
-		resa, _ = chaincode.Query(qAPIArgs0, qArgsa)
-		resb, _ = chaincode.Query(qAPIArgs0, qArgsb)
+				resa, _ = chaincode.Query(qAPIArgs0, qArgsa)
+				resb, _ = chaincode.Query(qAPIArgs0, qArgsb)
 
-		resaI, _ = strconv.Atoi(resa)
-		resbI, _ = strconv.Atoi(resb)
-		if (curra == resaI) && (currb == resbI) {
-			fmt.Println("Results in a and b after bringing up peers match :")
-			valueStr := fmt.Sprintf(" curra : %d, currb : %d, resa : %d , resb : %d", curra, currb, resaI, resbI)
-			fmt.Println(valueStr)
-		} else {
-			fmt.Println("******************************")
-			fmt.Println("RESULTS DO NOT MATCH ")
-			fmt.Println("******************************")
-		}
+				resaI, _ = strconv.Atoi(resa)
+				resbI, _ = strconv.Atoi(resb)
+				if (curra == resaI) && (currb == resbI) {
+					fmt.Println("Results in a and b after bringing up peers match :")
+					valueStr := fmt.Sprintf(" curra : %d, currb : %d, resa : %d , resb : %d", curra, currb, resaI, resbI)
+					fmt.Println(valueStr)
+				} else {
+					fmt.Println("******************************")
+					fmt.Println("RESULTS DO NOT MATCH ")
+					fmt.Println("******************************")
+				}
 
-		fmt.Println("PAUSING PEER1, ONLY.. To Test Consensus")
-		peernetwork.StopPeerLocal(MyNetwork, "PEER1")
-		//time.Sleep(30000 * time.Millisecond)
-************************************************/
+				fmt.Println("PAUSING PEER1, ONLY.. To Test Consensus")
+				peernetwork.StopPeerLocal(MyNetwork, "PEER1")
+				//time.Sleep(30000 * time.Millisecond)
+		************************************************/
 		j++
 
 	}

@@ -1,12 +1,12 @@
 package main
+
 /******************** Testing Objective consensu: Sending Invoke Requests in Parallel ********
 *   Setup: 8 node local docker peer network with security
 *   0. Deploy chaincodeexample02 with 100000000, 1 as initial args
 *   1. Send Invoke Requests in parallel on multiple peers using go routines.
     2. Logic is set so that one complete set of invoke requests on 8 peers would send 144 requests.
-*   3. After each such one loop, verify query results match on PEER0 and PEER1 
+*   3. After each such one loop, verify query results match on PEER0 and PEER1
 *********************************************************************/
-
 
 import (
 	"fmt"
@@ -24,8 +24,8 @@ func main() {
 	fmt.Println("Creating a local docker network")
 	peernetwork.SetupLocalNetwork(5, true)
 
-        //with the InvokeLoop designed with this 8 peer 4 req setup we would have 144 requests in one round
-        numPeers := 5
+	//with the InvokeLoop designed with this 8 peer 4 req setup we would have 144 requests in one round
+	numPeers := 5
 	numReq := 4
 
 	time.Sleep(60000 * time.Millisecond)
@@ -35,26 +35,24 @@ func main() {
 	//chaincode.Init()
 	chaincode.RegisterUsers()
 
-
-        //os.Exit(1)
+	//os.Exit(1)
 	//get a URL details to get info n chainstats/transactions/blocks etc.
 	aPeer, _ := peernetwork.APeer(chaincode.ThisNetwork)
 	url := "http://" + aPeer.PeerDetails["ip"] + ":" + aPeer.PeerDetails["port"]
 
-        fmt.Println("Peers on network ")
+	fmt.Println("Peers on network ")
 	chaincode.NetworkPeers(url)
 
 	fmt.Println("\nPOST/Chaincode: Deploying chaincode at the beginning ....")
-
 
 	dAPIArgs0 := []string{"example02", "init"}
 	depArgs0 := []string{"a", "100000000", "b", "0"}
 	chaincode.Deploy(dAPIArgs0, depArgs0)
 	//fmt.Println("From Deploy error ", err)
 
-        //os.Exit(1)
+	//os.Exit(1)
 
-	time.Sleep(60000 * time.Millisecond);
+	time.Sleep(60000 * time.Millisecond)
 	fmt.Println("\nPOST/Chaincode: Querying a and b after deploy >>>>>>>>>>> ")
 
 	qAPIArgs0 := []string{"example02", "query"}
@@ -62,18 +60,16 @@ func main() {
 	qArgsb := []string{"b"}
 	A, _ := chaincode.Query(qAPIArgs0, qArgsa)
 	B, _ := chaincode.Query(qAPIArgs0, qArgsb)
-	myStr := fmt.Sprintf("\nA = %s B= %s", A,B)
+	myStr := fmt.Sprintf("\nA = %s B= %s", A, B)
 	fmt.Println(myStr)
-
 
 	InvokeLoop(numPeers, numReq)
 
 }
 
-
 func InvokeLoop(numPeers int, numReq int) {
 
-	var inita, initb, curra, currb  int
+	var inita, initb, curra, currb int
 	inita = 100000000
 	initb = 0
 	curra = inita
@@ -81,44 +77,44 @@ func InvokeLoop(numPeers int, numReq int) {
 
 	invArgs0 := []string{"a", "b", "1"}
 	//i := 0
-	for  {
+	for {
 		j := 0
 		k := 1
-		for ( j < numPeers  ) {
+		for j < numPeers {
 			k = 1
 			//fmt.Println("Value in j ", j)
 			currPeer := "PEER" + strconv.Itoa(j)
 			iAPIArgsCurrPeer := []string{"example02", "invoke", currPeer}
-			for (k <= numReq) {
-			 	go chaincode.InvokeOnPeer(iAPIArgsCurrPeer, invArgs0)
-			 	//fmt.Println("Invoking ", k)
-			 	k++
-	  	}
-			m:=j-1
-			for (m >=0 ) {
-			 	loopPeer := "PEER" + strconv.Itoa(m)
-			 	//fmt.Println("Value in loopPeer ", loopPeer)
-			 	iAPIArgsLoopPeer := []string{"example02", "invoke", loopPeer}
-			 	k = 1
-		   	for (k <= numReq) {
+			for k <= numReq {
+				go chaincode.InvokeOnPeer(iAPIArgsCurrPeer, invArgs0)
+				//fmt.Println("Invoking ", k)
+				k++
+			}
+			m := j - 1
+			for m >= 0 {
+				loopPeer := "PEER" + strconv.Itoa(m)
+				//fmt.Println("Value in loopPeer ", loopPeer)
+				iAPIArgsLoopPeer := []string{"example02", "invoke", loopPeer}
+				k = 1
+				for k <= numReq {
 					go chaincode.InvokeOnPeer(iAPIArgsLoopPeer, invArgs0)
 					//fmt.Println("Invoking LoopPeer", k)
-				  k++
-		   	}
-				m = m-1
+					k++
+				}
+				m = m - 1
 			}
-  		j++;
+			j++
 		}
 		curra = curra - 144
 		currb = currb + 144
 		QueryMatch(curra, currb)
-    //i++
+		//i++
 	}
 }
 
 func QueryMatch(curra int, currb int) {
 
-  fmt.Println("Inside Query match ********************************* &&&&&&&&&&&&&& %%%%%%%%%%%%%%%%")
+	fmt.Println("Inside Query match ********************************* &&&&&&&&&&&&&& %%%%%%%%%%%%%%%%")
 	fmt.Println("Sleeping for 2 minutes ")
 	time.Sleep(120000 * time.Millisecond)
 
