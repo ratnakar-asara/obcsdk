@@ -10,6 +10,7 @@ import (
 	"obcsdk/chaincode"
 	"obcsdk/peernetwork"
 )
+
 /********** Test Objective : Ledger Stress with 2 Clients and 1 Peer ************
 *
 *   Setup: 4 node peer network with security enabled
@@ -33,11 +34,11 @@ const (
 )
 
 func initNetwork() {
-	fmt.Println("========= Init Network =========")
+	logger("========= Init Network =========")
 	peernetwork.GetNC_Local()
 	peerNetworkSetup = chaincode.InitNetwork()
 	chaincode.InitChainCodes()
-	fmt.Println("========= Register Users =========")
+	logger("========= Register Users =========")
 	chaincode.RegisterCustomUsers()
 }
 
@@ -67,7 +68,7 @@ func InvokeMultiThreads() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
 			if counter%1000 == 0 {
 				elapsed := time.Since(curTime)
-				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-1")
+				logger(fmt.Sprintf("=========>>>>>> Iteration# %d Time: %s CLIENT-1", counter, elapsed))
 				curTime = time.Now()
 			}
 			//invokeChaincode("test_user3")
@@ -79,7 +80,7 @@ func InvokeMultiThreads() {
 		for i := 1; i <= TRX_COUNT/CLIENTS; i++ {
 			if counter%1000 == 0 {
 				elapsed := time.Since(curTime)
-				fmt.Println("=========>>>>>> Iteration#", counter, " Time: ", elapsed, "CLIENT-2")
+				logger(fmt.Sprintf("=========>>>>>> Iteration# %d Time: %s CLIENT-2", counter, elapsed))
 				curTime = time.Now()
 			}
 			//invokeChaincode("test_user4")
@@ -89,38 +90,40 @@ func InvokeMultiThreads() {
 	}()
 }
 
+//TODO: move this to Utils.go
 //Cleanup methods to display useful information
 func tearDown() {
-	fmt.Println("....... State transfer is happening, Lets take a nap for 2 mins ......")
+	logger("....... State transfer is happening, Lets take a nap for 2 mins ......")
 	sleep(60)
 	val1, val2 := queryChaincode(counter)
-	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n", counter, val1, val2)
+	logger(fmt.Sprintf("========= After Query values a%d = %s,  counter = %s", counter, val1, val2))
 
 	newVal, err := strconv.ParseInt(val2, 10, 64)
 	if err != nil {
-		fmt.Println("Failed to convert ", val2, " to int64\n Error: ", err)
+		logger(fmt.Sprintf("Failed to convert %s to int64\n Error: %s", val2, err))
 	}
 
 	//TODO: Block size again depends on the Block configuration in pbft config file
 	//Test passes when 2 * block height match with total transactions, else fails
 	if newVal == counter {
-		fmt.Println("\n######### Inserted ", TRX_COUNT, " records #########\n")
-		fmt.Println("######### TEST PASSED #########")
+		logger(fmt.Sprintf("######### Inserted %d records #########\n", TRX_COUNT))
+		logger("######### fmt.Sprintf(TEST PASSED #########")
 	} else {
-		fmt.Println("######### TEST FAILED #########")
+		logger("######### TEST FAILED #########")
 	}
 }
 
 //Execution starts here ...
 func main() {
+	initLogger("LedgerStressTwoCliOnePeer500K")
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
 	if len(os.Args) < 1 {
-		fmt.Println("Usage: go run LedgerStressTwoCliOnePeer500K.go Utils.go")
+		logger("Usage: go run LedgerStressTwoCliOnePeer500K.go Utils.go")
 		return
 	}
 	//TODO: Have a regular expression to check if the give argument is correct format
 	/*if !strings.Contains(os.Args[1], "http://") {
-		fmt.Println("Error: Argument submitted is not right format ex: http://127.0.0.1:5000 ")
+		logger("Error: Argument submitted is not right format ex: http://127.0.0.1:5000 ")
 		return;
 	}*/
 	//Get the URL
@@ -129,9 +132,9 @@ func main() {
 	defer TimeTracker(time.Now(), "Total execution time for LedgerStressTwoCliOnePeer500K.go ")
 
 	Init()
-	fmt.Println("========= Transacations execution stated  =========")
+	logger("========= Transacations execution stated  =========")
 	InvokeMultiThreads()
 	wg.Wait()
-	fmt.Println("========= Transacations execution ended  =========")
+	logger("========= Transacations execution ended  =========")
 	tearDown() //url
 }

@@ -96,6 +96,7 @@ func tearDown() {
 
 //Execution starts from here ...
 func main() {
+	initLogger("LedgerStressOneCliOnePeer")
 	//TODO:Add support similar to GNU getopts, http://goo.gl/Cp6cIg
 	if len(os.Args) < 1 {
 		fmt.Println("Usage: go run LedgerStressOneCliOnePeer.go Utils.go")
