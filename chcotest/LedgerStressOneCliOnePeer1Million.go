@@ -33,7 +33,8 @@ var wg sync.WaitGroup
 var counter int64
 
 const (
-	TRX_COUNT = 10000000 // 3000000 Enable for long runs
+	//TODO: change value to 30000000, for inserting 30 million records
+	TRX_COUNT = 1000000 // 1 Million
 )
 
 func initNetwork() {
@@ -71,31 +72,6 @@ func invokeLoop() {
 	}()
 }
 
-//TODO: move this to Utils.go
-//Cleanup methods to display useful information
-func tearDown() {
-	logger("....... State transfer is happening, Lets take a nap for a minute ......")
-	sleep(600)
-	logger(fmt.Sprintf("========= Counter is %d", counter))
-	val1, val2 := queryChaincode(counter)
-	logger(fmt.Sprintf("========= After Query values a%d = %s,  counter = %s", counter, val1, val2))
-
-	newVal, err := strconv.ParseInt(val2, 10, 64)
-
-	if err != nil {
-		logger(fmt.Sprintf("Failed to convert %s to int64\n Error: %s", err))
-	}
-
-	//TODO: Block size again depends on the Block configuration in pbft config file
-	//Test passes when 2 * block height match with total transactions, else fails
-	if newVal == counter {
-		logger(fmt.Sprintf("######### Inserted %d records #########", TRX_COUNT))
-		logger("######### TEST PASSED #########")
-	} else {
-		logger("######### TEST FAILED #########")
-	}
-}
-
 //Execution starts from here ...
 func main() {
 	initLogger("LedgerStressOneCliOnePeer1Million")
@@ -123,6 +99,5 @@ func main() {
 	invokeLoop()
 	wg.Wait()
 	logger("========= Transacations execution ended  =========")
-
-	tearDown()
+	tearDown(counter)
 }

@@ -29,7 +29,7 @@ var counter int64
 var wg sync.WaitGroup
 
 const (
-	TRX_COUNT = 1000000
+	TRX_COUNT = 1000000 // 1 Million
 	CLIENTS   = 2
 )
 
@@ -90,29 +90,6 @@ func InvokeMultiThreads() {
 	}()
 }
 
-//TODO: move this to Utils.go
-//Cleanup methods to display useful information
-func tearDown() {
-	logger("....... State transfer is happening, Lets take a nap for 2 mins ......")
-	sleep(60)
-	val1, val2 := queryChaincode(counter)
-	logger(fmt.Sprintf("========= After Query values a%d = %s,  counter = %s", counter, val1, val2))
-
-	newVal, err := strconv.ParseInt(val2, 10, 64)
-	if err != nil {
-		logger(fmt.Sprintf("Failed to convert %s to int64\n Error: %s", val2, err))
-	}
-
-	//TODO: Block size again depends on the Block configuration in pbft config file
-	//Test passes when 2 * block height match with total transactions, else fails
-	if newVal == counter {
-		logger(fmt.Sprintf("######### Inserted %d records #########\n", TRX_COUNT))
-		logger("######### fmt.Sprintf(TEST PASSED #########")
-	} else {
-		logger("######### TEST FAILED #########")
-	}
-}
-
 //Execution starts here ...
 func main() {
 	initLogger("LedgerStressTwoCliOnePeer500K")
@@ -136,5 +113,5 @@ func main() {
 	InvokeMultiThreads()
 	wg.Wait()
 	logger("========= Transacations execution ended  =========")
-	tearDown() //url
+	tearDown(counter)
 }

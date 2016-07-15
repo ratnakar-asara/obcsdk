@@ -70,30 +70,6 @@ func invokeLoop() {
 	}()
 }
 
-//Cleanup methods to display useful information
-func tearDown() {
-	fmt.Println("....... State transfer is happening, Lets take a nap for two minute ......")
-	sleep(120)
-	fmt.Println("========= Counter is", counter)
-	val1, val2 := queryChaincode(counter)
-	fmt.Printf("\n========= After Query values a%d = %s,  counter = %s\n", counter, val1, val2)
-
-	newVal, err := strconv.ParseInt(val2, 10, 64)
-
-	if err != nil {
-		fmt.Println("Failed to convert ", val2, " to int64\n Error: ", err)
-	}
-
-	//TODO: Block size again depends on the Block configuration in pbft config file
-	//Test passes when 2 * block height match with total transactions, else fails
-	if newVal == counter {
-		fmt.Println("\n######### Inserted ", counter, " records #########\n")
-		fmt.Println("######### TEST PASSED #########")
-	} else {
-		fmt.Println("######### TEST FAILED #########")
-	}
-}
-
 //Execution starts from here ...
 func main() {
 	initLogger("LedgerStressOneCliOnePeer")
@@ -127,5 +103,5 @@ func main() {
 	invokeLoop()
 	wg.Wait()
 	fmt.Println("========= Transacations execution ended  =========")
-	tearDown()
+	tearDown(counter)
 }
